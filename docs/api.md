@@ -1,0 +1,96 @@
+# API v1
+
+Базовый URL: `http://localhost:8000/api/v1`. Swagger: `http://localhost:8000/docs`.
+JSON в UTF-8. Категории и AI содержат локализованные RU/KK поля; пользовательский текст не переводится автоматически. `Accept-Language` разрешён, но ответы стабильны и возвращают оба локализованных поля. Коды ошибок одинаковы для всех языков; Flutter локализует их.
+
+## Авторизация
+
+```bash
+curl -X POST http://localhost:8000/api/v1/auth/register \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"resident@example.com","password":"Local-test-password!","display_name":"Житель","preferred_language":"ru"}'
+```
+
+Ответ содержит `access_token`, `refresh_token`, `token_type`, `user`. Передавайте access как `Authorization: Bearer <access_token>`. Refresh/logout принимают JSON `{"refresh_token":"..."}`. После refresh атомарно замените оба токена. Не выводите их в логи.
+
+## Основные маршруты
+
+| Метод | Путь | Назначение |
+|---|---|---|
+| POST | /auth/register, /auth/login, /auth/refresh, /auth/logout | Сессии |
+| GET, PATCH | /users/me | Профиль |
+| GET | /users/me/confirmations, /users/me/notifications | Личная активность |
+| GET | /categories | Справочник из БД |
+| POST | /uploads/images | multipart `file`, до 10 МБ |
+| POST | /uploads/audio | multipart `file`, `language=ru|kk`, `cloud_consent`, до 15 МБ |
+| GET | /uploads/{id} | Состояние/транскрипт владельцу |
+| POST | /uploads/{id}/retry | Повтор задания |
+| GET | /uploads/{id}/preview | Обработанное фото владельцу |
+| POST | /incidents/analyze | upload_id, description, language, cloud_consent |
+| POST | /incidents/duplicates/search | Координаты, category_id, title, description |
+| POST | /incidents | Публикация или серверный черновик |
+| GET | /incidents | page, page_size≤100, sort, category_id, status, author_id |
+| GET | /incidents/nearby | latitude, longitude, radius≤20000, limit≤200, category_id |
+| GET, PATCH | /incidents/{id} | Детали; изменение только своего черновика |
+| GET | /incidents/{id}/timeline | История, page, page_size≤100 |
+| GET, POST | /incidents/{id}/confirmations | still_exists, resolved, partially_resolved |
+| GET, POST | /incidents/{id}/comments | Комментарии |
+| POST | /content-reports | Ровно один incident_id или comment_id, reason |
+| GET | /health, /ready | Процесс и зависимости |
+
+Сортировка: `newest`, `priority`, `confirmations`. Списки имеют верхний лимит. Категории — фиксированный небольшой справочник. Координаты WGS84, радиус в метрах. Лента не возвращает скрытые записи и черновики. Жители могут подтвердить решение после `resolved_pending_confirmation`; оспаривание возвращает его в `under_review`.
+
+## Загрузка и публикация
+
+```bash
+curl -X POST http://localhost:8000/api/v1/uploads/images \
+  -H 'Authorization: Bearer <access_token>' \
+  -F 'file=@sample_data/images/demo.jpg;type=image/jpeg'
+```
+
+Используйте возвращённый upload ID:
+
+```http
+POST /api/v1/incidents
+Authorization: Bearer <access_token>
+Idempotency-Key: 049cd179-ec40-4b22-a383-b40b1f22affc
+Content-Type: application/json
+
+{
+  "category_id": "road_damage",
+  "title": "Повреждение дорожного покрытия",
+  "description": "Выбоина рядом с перекрёстком",
+  "latitude": 43.2389,
+  "longitude": 76.8897,
+  "address": "Уточнённый пользователем ориентир",
+  "severity": 7,
+  "upload_ids": ["<upload_uuid>"],
+  "reviewed_by_user": true,
+  "publish": true,
+  "cloud_consent": false
+}
+```
+
+Повторите **тот же JSON и ключ** при потере ответа. Ответ 201 содержит тот же Incident. Смена JSON с прежним ключом — 409 `idempotency_conflict`. Идентификатор источника не принимается: только citizen. Поля ai_confidence и priority_score вычисляются сервером.
+
+## Модерация и организации
+
+- GET `/moderation/incidents`, `/moderation/reports` — очередь для moderator/admin.
+- PATCH `/moderation/incidents/{id}` — `status`, `note`, `category_id`, `is_hidden`.
+- POST `/moderation/incidents/{id}/assignments` — organization_id, executor_name, due_at. Организация может назначить исполнителя только уже закреплённого за ней обращения.
+- POST `/moderation/incidents/{id}/after-photo/{upload_id}` — обработанное фото результата от назначенной организации/admin.
+- POST `/moderation/incidents/{id}/merge` — target_incident_id, явное объединение модератором.
+- POST `/moderation/reports/{id}/resolve?hide=true|false` — обработка жалобы.
+- PATCH `/admin/categories/{code}` — имена, описание, опасность, icon, color, активность.
+- PATCH `/admin/users/{id}/role` — роль и organization_id.
+- GET `/admin/audit` — аудит. GET `/metrics` — Prometheus, только admin.
+
+Организации и модераторы в MVP используют API/Swagger. Отдельной операторской панели нет. Новые организации пока создаются оператором БД; API администрирования организаций — задача следующего выпуска.
+
+## Ошибки
+
+```json
+{"error":{"code":"review_required","message":"Проверьте результат перед публикацией","request_id":"..."}}
+```
+
+401 — нужна сессия; 403 — нет прав; 404 — объект отсутствует или скрыт; 409 — конфликт, повтор подтверждения или запрещённый переход; 413 — лимит; 415 — неподдерживаемый файл; 422 — валидация; 429 — лимит запросов; 500/503 — временный сбой. Request ID также в `X-Request-ID`. В ответах валидации отсутствуют исходные секреты и содержимое файла.
