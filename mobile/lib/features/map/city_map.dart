@@ -15,6 +15,7 @@ class CityMap extends StatefulWidget {
     this.onSelect,
     this.onIncident,
     this.categories = const {},
+    this.onViewportChanged,
   });
   final LatLng center;
   final List<Incident> incidents;
@@ -22,6 +23,7 @@ class CityMap extends StatefulWidget {
   final ValueChanged<LatLng>? onSelect;
   final ValueChanged<Incident>? onIncident;
   final Map<String, IncidentCategory> categories;
+  final void Function(LatLng center, double radius)? onViewportChanged;
   @override
   State<CityMap> createState() => _CityMapState();
 }
@@ -69,6 +71,19 @@ class _CityMapState extends State<CityMap> {
       initialZoom: 14,
       onMapReady: () => ready = true,
       onTap: (_, point) => widget.onSelect?.call(point),
+      onPositionChanged: (camera, hasGesture) {
+        if (hasGesture) {
+          final radius = const Distance().as(
+            LengthUnit.Meter,
+            camera.center,
+            camera.visibleBounds.northEast,
+          );
+          widget.onViewportChanged?.call(
+            camera.center,
+            radius.clamp(100, 20000),
+          );
+        }
+      },
     ),
     children: [
       TileLayer(
@@ -88,14 +103,17 @@ class _CityMapState extends State<CityMap> {
                     width: 42,
                     height: 48,
                     child: Semantics(
-                      label: item.title,
+                      label:
+                          '${item.title}, ${context.statusLabel(item.status)}',
                       button: true,
                       child: GestureDetector(
                         onTap: () => widget.onIncident?.call(item),
                         child: CircleAvatar(
                           backgroundColor: categoryColor(item),
                           child: Icon(
-                            categoryIcon(item),
+                            item.status == 'resolved'
+                                ? Icons.check_circle_outline
+                                : categoryIcon(item),
                             color: Colors.white,
                             size: 24,
                           ),

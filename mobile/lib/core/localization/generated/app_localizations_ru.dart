@@ -9,6 +9,55 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
+  String get sessionExpired =>
+      'Сессия завершена. Войдите снова; ваш черновик сохранён.';
+
+  @override
+  String get invalidCategory =>
+      'Категория больше недоступна. Выберите другую; фото, точка и текст сохранены.';
+
+  @override
+  String get publicationConflict =>
+      'Ключ отправки связан с другим содержимым. Проверьте результат предыдущей попытки перед исправлением.';
+
+  @override
+  String get uploadAlreadyUsed =>
+      'Фото уже связано с обращением. Проверьте предыдущую отправку; при исправлении выберите новое фото.';
+
+  @override
+  String get publicationCancelled =>
+      'Предыдущая попытка отменена. Проверьте результат, чтобы продолжить редактирование.';
+
+  @override
+  String get publicationUnknown =>
+      'Результат отправки пока неизвестен. Повтор использует тот же ключ и не создаст вторую копию.';
+
+  @override
+  String get recoverPublication => 'Проверить исход и исправить';
+
+  @override
+  String get discardDraft => 'Удалить черновик';
+
+  @override
+  String get discardDraftPrompt =>
+      'Удалить локальный черновик? Если отправка уже завершилась, откроется созданное обращение. При недоступном сервере черновик останется сохранённым.';
+
+  @override
+  String get searchHere => 'Искать здесь';
+
+  @override
+  String get refreshMap => 'Обновить карту';
+
+  @override
+  String mapSearchArea(int radius) {
+    return 'Обращения в радиусе $radius м от точки поиска. Переместите карту и нажмите «Искать здесь».';
+  }
+
+  @override
+  String get mapResultsLimited =>
+      'Показаны первые 200 обращений. Приблизьте карту или уточните категорию.';
+
+  @override
   String get appName => 'QalaPulse';
 
   @override

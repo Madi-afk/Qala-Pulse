@@ -903,7 +903,7 @@ as String?,
 /// @nodoc
 mixin _$IncidentDraft {
 
- String get key; String? get photoPath; String? get photoBase64; String? get uploadId; double? get latitude; double? get longitude; String get description; String get title; String get categoryId; int get severity; String get address; int get step; bool get reviewed; bool get cloudConsent; bool get waitingToSend; String get audioPath; String? get audioUploadId; Map<String, dynamic>? get analysis; Map<String, dynamic>? get pendingPayload;
+ String get key; String? get photoPath; String? get photoBase64; String? get uploadId; double? get latitude; double? get longitude; String get description; String get title; String get categoryId; int get severity; String get address; int get step; bool get reviewed; bool get cloudConsent; bool get waitingToSend; String get audioPath; String? get audioUploadId; Map<String, dynamic>? get analysis; Map<String, dynamic>? get pendingPayload; String? get publicationError;
 /// Create a copy of IncidentDraft
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -916,16 +916,16 @@ $IncidentDraftCopyWith<IncidentDraft> get copyWith => _$IncidentDraftCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is IncidentDraft&&(identical(other.key, key) || other.key == key)&&(identical(other.photoPath, photoPath) || other.photoPath == photoPath)&&(identical(other.photoBase64, photoBase64) || other.photoBase64 == photoBase64)&&(identical(other.uploadId, uploadId) || other.uploadId == uploadId)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.description, description) || other.description == description)&&(identical(other.title, title) || other.title == title)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.severity, severity) || other.severity == severity)&&(identical(other.address, address) || other.address == address)&&(identical(other.step, step) || other.step == step)&&(identical(other.reviewed, reviewed) || other.reviewed == reviewed)&&(identical(other.cloudConsent, cloudConsent) || other.cloudConsent == cloudConsent)&&(identical(other.waitingToSend, waitingToSend) || other.waitingToSend == waitingToSend)&&(identical(other.audioPath, audioPath) || other.audioPath == audioPath)&&(identical(other.audioUploadId, audioUploadId) || other.audioUploadId == audioUploadId)&&const DeepCollectionEquality().equals(other.analysis, analysis)&&const DeepCollectionEquality().equals(other.pendingPayload, pendingPayload));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is IncidentDraft&&(identical(other.key, key) || other.key == key)&&(identical(other.photoPath, photoPath) || other.photoPath == photoPath)&&(identical(other.photoBase64, photoBase64) || other.photoBase64 == photoBase64)&&(identical(other.uploadId, uploadId) || other.uploadId == uploadId)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.description, description) || other.description == description)&&(identical(other.title, title) || other.title == title)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.severity, severity) || other.severity == severity)&&(identical(other.address, address) || other.address == address)&&(identical(other.step, step) || other.step == step)&&(identical(other.reviewed, reviewed) || other.reviewed == reviewed)&&(identical(other.cloudConsent, cloudConsent) || other.cloudConsent == cloudConsent)&&(identical(other.waitingToSend, waitingToSend) || other.waitingToSend == waitingToSend)&&(identical(other.audioPath, audioPath) || other.audioPath == audioPath)&&(identical(other.audioUploadId, audioUploadId) || other.audioUploadId == audioUploadId)&&const DeepCollectionEquality().equals(other.analysis, analysis)&&const DeepCollectionEquality().equals(other.pendingPayload, pendingPayload)&&(identical(other.publicationError, publicationError) || other.publicationError == publicationError));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,key,photoPath,photoBase64,uploadId,latitude,longitude,description,title,categoryId,severity,address,step,reviewed,cloudConsent,waitingToSend,audioPath,audioUploadId,const DeepCollectionEquality().hash(analysis),const DeepCollectionEquality().hash(pendingPayload)]);
+int get hashCode => Object.hashAll([runtimeType,key,photoPath,photoBase64,uploadId,latitude,longitude,description,title,categoryId,severity,address,step,reviewed,cloudConsent,waitingToSend,audioPath,audioUploadId,const DeepCollectionEquality().hash(analysis),const DeepCollectionEquality().hash(pendingPayload),publicationError]);
 
 @override
 String toString() {
-  return 'IncidentDraft(key: $key, photoPath: $photoPath, photoBase64: $photoBase64, uploadId: $uploadId, latitude: $latitude, longitude: $longitude, description: $description, title: $title, categoryId: $categoryId, severity: $severity, address: $address, step: $step, reviewed: $reviewed, cloudConsent: $cloudConsent, waitingToSend: $waitingToSend, audioPath: $audioPath, audioUploadId: $audioUploadId, analysis: $analysis, pendingPayload: $pendingPayload)';
+  return 'IncidentDraft(key: $key, photoPath: $photoPath, photoBase64: $photoBase64, uploadId: $uploadId, latitude: $latitude, longitude: $longitude, description: $description, title: $title, categoryId: $categoryId, severity: $severity, address: $address, step: $step, reviewed: $reviewed, cloudConsent: $cloudConsent, waitingToSend: $waitingToSend, audioPath: $audioPath, audioUploadId: $audioUploadId, analysis: $analysis, pendingPayload: $pendingPayload, publicationError: $publicationError)';
 }
 
 
@@ -936,7 +936,7 @@ abstract mixin class $IncidentDraftCopyWith<$Res>  {
   factory $IncidentDraftCopyWith(IncidentDraft value, $Res Function(IncidentDraft) _then) = _$IncidentDraftCopyWithImpl;
 @useResult
 $Res call({
- String key, String? photoPath, String? photoBase64, String? uploadId, double? latitude, double? longitude, String description, String title, String categoryId, int severity, String address, int step, bool reviewed, bool cloudConsent, bool waitingToSend, String audioPath, String? audioUploadId, Map<String, dynamic>? analysis, Map<String, dynamic>? pendingPayload
+ String key, String? photoPath, String? photoBase64, String? uploadId, double? latitude, double? longitude, String description, String title, String categoryId, int severity, String address, int step, bool reviewed, bool cloudConsent, bool waitingToSend, String audioPath, String? audioUploadId, Map<String, dynamic>? analysis, Map<String, dynamic>? pendingPayload, String? publicationError
 });
 
 
@@ -953,7 +953,7 @@ class _$IncidentDraftCopyWithImpl<$Res>
 
 /// Create a copy of IncidentDraft
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? key = null,Object? photoPath = freezed,Object? photoBase64 = freezed,Object? uploadId = freezed,Object? latitude = freezed,Object? longitude = freezed,Object? description = null,Object? title = null,Object? categoryId = null,Object? severity = null,Object? address = null,Object? step = null,Object? reviewed = null,Object? cloudConsent = null,Object? waitingToSend = null,Object? audioPath = null,Object? audioUploadId = freezed,Object? analysis = freezed,Object? pendingPayload = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? key = null,Object? photoPath = freezed,Object? photoBase64 = freezed,Object? uploadId = freezed,Object? latitude = freezed,Object? longitude = freezed,Object? description = null,Object? title = null,Object? categoryId = null,Object? severity = null,Object? address = null,Object? step = null,Object? reviewed = null,Object? cloudConsent = null,Object? waitingToSend = null,Object? audioPath = null,Object? audioUploadId = freezed,Object? analysis = freezed,Object? pendingPayload = freezed,Object? publicationError = freezed,}) {
   return _then(_self.copyWith(
 key: null == key ? _self.key : key // ignore: cast_nullable_to_non_nullable
 as String,photoPath: freezed == photoPath ? _self.photoPath : photoPath // ignore: cast_nullable_to_non_nullable
@@ -974,7 +974,8 @@ as bool,audioPath: null == audioPath ? _self.audioPath : audioPath // ignore: ca
 as String,audioUploadId: freezed == audioUploadId ? _self.audioUploadId : audioUploadId // ignore: cast_nullable_to_non_nullable
 as String?,analysis: freezed == analysis ? _self.analysis : analysis // ignore: cast_nullable_to_non_nullable
 as Map<String, dynamic>?,pendingPayload: freezed == pendingPayload ? _self.pendingPayload : pendingPayload // ignore: cast_nullable_to_non_nullable
-as Map<String, dynamic>?,
+as Map<String, dynamic>?,publicationError: freezed == publicationError ? _self.publicationError : publicationError // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -1059,10 +1060,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String key,  String? photoPath,  String? photoBase64,  String? uploadId,  double? latitude,  double? longitude,  String description,  String title,  String categoryId,  int severity,  String address,  int step,  bool reviewed,  bool cloudConsent,  bool waitingToSend,  String audioPath,  String? audioUploadId,  Map<String, dynamic>? analysis,  Map<String, dynamic>? pendingPayload)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String key,  String? photoPath,  String? photoBase64,  String? uploadId,  double? latitude,  double? longitude,  String description,  String title,  String categoryId,  int severity,  String address,  int step,  bool reviewed,  bool cloudConsent,  bool waitingToSend,  String audioPath,  String? audioUploadId,  Map<String, dynamic>? analysis,  Map<String, dynamic>? pendingPayload,  String? publicationError)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _IncidentDraft() when $default != null:
-return $default(_that.key,_that.photoPath,_that.photoBase64,_that.uploadId,_that.latitude,_that.longitude,_that.description,_that.title,_that.categoryId,_that.severity,_that.address,_that.step,_that.reviewed,_that.cloudConsent,_that.waitingToSend,_that.audioPath,_that.audioUploadId,_that.analysis,_that.pendingPayload);case _:
+return $default(_that.key,_that.photoPath,_that.photoBase64,_that.uploadId,_that.latitude,_that.longitude,_that.description,_that.title,_that.categoryId,_that.severity,_that.address,_that.step,_that.reviewed,_that.cloudConsent,_that.waitingToSend,_that.audioPath,_that.audioUploadId,_that.analysis,_that.pendingPayload,_that.publicationError);case _:
   return orElse();
 
 }
@@ -1080,10 +1081,10 @@ return $default(_that.key,_that.photoPath,_that.photoBase64,_that.uploadId,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String key,  String? photoPath,  String? photoBase64,  String? uploadId,  double? latitude,  double? longitude,  String description,  String title,  String categoryId,  int severity,  String address,  int step,  bool reviewed,  bool cloudConsent,  bool waitingToSend,  String audioPath,  String? audioUploadId,  Map<String, dynamic>? analysis,  Map<String, dynamic>? pendingPayload)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String key,  String? photoPath,  String? photoBase64,  String? uploadId,  double? latitude,  double? longitude,  String description,  String title,  String categoryId,  int severity,  String address,  int step,  bool reviewed,  bool cloudConsent,  bool waitingToSend,  String audioPath,  String? audioUploadId,  Map<String, dynamic>? analysis,  Map<String, dynamic>? pendingPayload,  String? publicationError)  $default,) {final _that = this;
 switch (_that) {
 case _IncidentDraft():
-return $default(_that.key,_that.photoPath,_that.photoBase64,_that.uploadId,_that.latitude,_that.longitude,_that.description,_that.title,_that.categoryId,_that.severity,_that.address,_that.step,_that.reviewed,_that.cloudConsent,_that.waitingToSend,_that.audioPath,_that.audioUploadId,_that.analysis,_that.pendingPayload);case _:
+return $default(_that.key,_that.photoPath,_that.photoBase64,_that.uploadId,_that.latitude,_that.longitude,_that.description,_that.title,_that.categoryId,_that.severity,_that.address,_that.step,_that.reviewed,_that.cloudConsent,_that.waitingToSend,_that.audioPath,_that.audioUploadId,_that.analysis,_that.pendingPayload,_that.publicationError);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1100,10 +1101,10 @@ return $default(_that.key,_that.photoPath,_that.photoBase64,_that.uploadId,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String key,  String? photoPath,  String? photoBase64,  String? uploadId,  double? latitude,  double? longitude,  String description,  String title,  String categoryId,  int severity,  String address,  int step,  bool reviewed,  bool cloudConsent,  bool waitingToSend,  String audioPath,  String? audioUploadId,  Map<String, dynamic>? analysis,  Map<String, dynamic>? pendingPayload)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String key,  String? photoPath,  String? photoBase64,  String? uploadId,  double? latitude,  double? longitude,  String description,  String title,  String categoryId,  int severity,  String address,  int step,  bool reviewed,  bool cloudConsent,  bool waitingToSend,  String audioPath,  String? audioUploadId,  Map<String, dynamic>? analysis,  Map<String, dynamic>? pendingPayload,  String? publicationError)?  $default,) {final _that = this;
 switch (_that) {
 case _IncidentDraft() when $default != null:
-return $default(_that.key,_that.photoPath,_that.photoBase64,_that.uploadId,_that.latitude,_that.longitude,_that.description,_that.title,_that.categoryId,_that.severity,_that.address,_that.step,_that.reviewed,_that.cloudConsent,_that.waitingToSend,_that.audioPath,_that.audioUploadId,_that.analysis,_that.pendingPayload);case _:
+return $default(_that.key,_that.photoPath,_that.photoBase64,_that.uploadId,_that.latitude,_that.longitude,_that.description,_that.title,_that.categoryId,_that.severity,_that.address,_that.step,_that.reviewed,_that.cloudConsent,_that.waitingToSend,_that.audioPath,_that.audioUploadId,_that.analysis,_that.pendingPayload,_that.publicationError);case _:
   return null;
 
 }
@@ -1115,7 +1116,7 @@ return $default(_that.key,_that.photoPath,_that.photoBase64,_that.uploadId,_that
 @JsonSerializable()
 
 class _IncidentDraft implements IncidentDraft {
-  const _IncidentDraft({required this.key, this.photoPath, this.photoBase64, this.uploadId, this.latitude, this.longitude, this.description = '', this.title = '', this.categoryId = 'other', this.severity = 3, this.address = '', this.step = 0, this.reviewed = false, this.cloudConsent = false, this.waitingToSend = false, this.audioPath = '', this.audioUploadId, final  Map<String, dynamic>? analysis, final  Map<String, dynamic>? pendingPayload}): _analysis = analysis,_pendingPayload = pendingPayload;
+  const _IncidentDraft({required this.key, this.photoPath, this.photoBase64, this.uploadId, this.latitude, this.longitude, this.description = '', this.title = '', this.categoryId = 'other', this.severity = 3, this.address = '', this.step = 0, this.reviewed = false, this.cloudConsent = false, this.waitingToSend = false, this.audioPath = '', this.audioUploadId, final  Map<String, dynamic>? analysis, final  Map<String, dynamic>? pendingPayload, this.publicationError}): _analysis = analysis,_pendingPayload = pendingPayload;
   factory _IncidentDraft.fromJson(Map<String, dynamic> json) => _$IncidentDraftFromJson(json);
 
 @override final  String key;
@@ -1153,6 +1154,7 @@ class _IncidentDraft implements IncidentDraft {
   return EqualUnmodifiableMapView(value);
 }
 
+@override final  String? publicationError;
 
 /// Create a copy of IncidentDraft
 /// with the given fields replaced by the non-null parameter values.
@@ -1167,16 +1169,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _IncidentDraft&&(identical(other.key, key) || other.key == key)&&(identical(other.photoPath, photoPath) || other.photoPath == photoPath)&&(identical(other.photoBase64, photoBase64) || other.photoBase64 == photoBase64)&&(identical(other.uploadId, uploadId) || other.uploadId == uploadId)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.description, description) || other.description == description)&&(identical(other.title, title) || other.title == title)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.severity, severity) || other.severity == severity)&&(identical(other.address, address) || other.address == address)&&(identical(other.step, step) || other.step == step)&&(identical(other.reviewed, reviewed) || other.reviewed == reviewed)&&(identical(other.cloudConsent, cloudConsent) || other.cloudConsent == cloudConsent)&&(identical(other.waitingToSend, waitingToSend) || other.waitingToSend == waitingToSend)&&(identical(other.audioPath, audioPath) || other.audioPath == audioPath)&&(identical(other.audioUploadId, audioUploadId) || other.audioUploadId == audioUploadId)&&const DeepCollectionEquality().equals(other._analysis, _analysis)&&const DeepCollectionEquality().equals(other._pendingPayload, _pendingPayload));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _IncidentDraft&&(identical(other.key, key) || other.key == key)&&(identical(other.photoPath, photoPath) || other.photoPath == photoPath)&&(identical(other.photoBase64, photoBase64) || other.photoBase64 == photoBase64)&&(identical(other.uploadId, uploadId) || other.uploadId == uploadId)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.description, description) || other.description == description)&&(identical(other.title, title) || other.title == title)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.severity, severity) || other.severity == severity)&&(identical(other.address, address) || other.address == address)&&(identical(other.step, step) || other.step == step)&&(identical(other.reviewed, reviewed) || other.reviewed == reviewed)&&(identical(other.cloudConsent, cloudConsent) || other.cloudConsent == cloudConsent)&&(identical(other.waitingToSend, waitingToSend) || other.waitingToSend == waitingToSend)&&(identical(other.audioPath, audioPath) || other.audioPath == audioPath)&&(identical(other.audioUploadId, audioUploadId) || other.audioUploadId == audioUploadId)&&const DeepCollectionEquality().equals(other._analysis, _analysis)&&const DeepCollectionEquality().equals(other._pendingPayload, _pendingPayload)&&(identical(other.publicationError, publicationError) || other.publicationError == publicationError));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,key,photoPath,photoBase64,uploadId,latitude,longitude,description,title,categoryId,severity,address,step,reviewed,cloudConsent,waitingToSend,audioPath,audioUploadId,const DeepCollectionEquality().hash(_analysis),const DeepCollectionEquality().hash(_pendingPayload)]);
+int get hashCode => Object.hashAll([runtimeType,key,photoPath,photoBase64,uploadId,latitude,longitude,description,title,categoryId,severity,address,step,reviewed,cloudConsent,waitingToSend,audioPath,audioUploadId,const DeepCollectionEquality().hash(_analysis),const DeepCollectionEquality().hash(_pendingPayload),publicationError]);
 
 @override
 String toString() {
-  return 'IncidentDraft(key: $key, photoPath: $photoPath, photoBase64: $photoBase64, uploadId: $uploadId, latitude: $latitude, longitude: $longitude, description: $description, title: $title, categoryId: $categoryId, severity: $severity, address: $address, step: $step, reviewed: $reviewed, cloudConsent: $cloudConsent, waitingToSend: $waitingToSend, audioPath: $audioPath, audioUploadId: $audioUploadId, analysis: $analysis, pendingPayload: $pendingPayload)';
+  return 'IncidentDraft(key: $key, photoPath: $photoPath, photoBase64: $photoBase64, uploadId: $uploadId, latitude: $latitude, longitude: $longitude, description: $description, title: $title, categoryId: $categoryId, severity: $severity, address: $address, step: $step, reviewed: $reviewed, cloudConsent: $cloudConsent, waitingToSend: $waitingToSend, audioPath: $audioPath, audioUploadId: $audioUploadId, analysis: $analysis, pendingPayload: $pendingPayload, publicationError: $publicationError)';
 }
 
 
@@ -1187,7 +1189,7 @@ abstract mixin class _$IncidentDraftCopyWith<$Res> implements $IncidentDraftCopy
   factory _$IncidentDraftCopyWith(_IncidentDraft value, $Res Function(_IncidentDraft) _then) = __$IncidentDraftCopyWithImpl;
 @override @useResult
 $Res call({
- String key, String? photoPath, String? photoBase64, String? uploadId, double? latitude, double? longitude, String description, String title, String categoryId, int severity, String address, int step, bool reviewed, bool cloudConsent, bool waitingToSend, String audioPath, String? audioUploadId, Map<String, dynamic>? analysis, Map<String, dynamic>? pendingPayload
+ String key, String? photoPath, String? photoBase64, String? uploadId, double? latitude, double? longitude, String description, String title, String categoryId, int severity, String address, int step, bool reviewed, bool cloudConsent, bool waitingToSend, String audioPath, String? audioUploadId, Map<String, dynamic>? analysis, Map<String, dynamic>? pendingPayload, String? publicationError
 });
 
 
@@ -1204,7 +1206,7 @@ class __$IncidentDraftCopyWithImpl<$Res>
 
 /// Create a copy of IncidentDraft
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? key = null,Object? photoPath = freezed,Object? photoBase64 = freezed,Object? uploadId = freezed,Object? latitude = freezed,Object? longitude = freezed,Object? description = null,Object? title = null,Object? categoryId = null,Object? severity = null,Object? address = null,Object? step = null,Object? reviewed = null,Object? cloudConsent = null,Object? waitingToSend = null,Object? audioPath = null,Object? audioUploadId = freezed,Object? analysis = freezed,Object? pendingPayload = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? key = null,Object? photoPath = freezed,Object? photoBase64 = freezed,Object? uploadId = freezed,Object? latitude = freezed,Object? longitude = freezed,Object? description = null,Object? title = null,Object? categoryId = null,Object? severity = null,Object? address = null,Object? step = null,Object? reviewed = null,Object? cloudConsent = null,Object? waitingToSend = null,Object? audioPath = null,Object? audioUploadId = freezed,Object? analysis = freezed,Object? pendingPayload = freezed,Object? publicationError = freezed,}) {
   return _then(_IncidentDraft(
 key: null == key ? _self.key : key // ignore: cast_nullable_to_non_nullable
 as String,photoPath: freezed == photoPath ? _self.photoPath : photoPath // ignore: cast_nullable_to_non_nullable
@@ -1225,7 +1227,8 @@ as bool,audioPath: null == audioPath ? _self.audioPath : audioPath // ignore: ca
 as String,audioUploadId: freezed == audioUploadId ? _self.audioUploadId : audioUploadId // ignore: cast_nullable_to_non_nullable
 as String?,analysis: freezed == analysis ? _self._analysis : analysis // ignore: cast_nullable_to_non_nullable
 as Map<String, dynamic>?,pendingPayload: freezed == pendingPayload ? _self._pendingPayload : pendingPayload // ignore: cast_nullable_to_non_nullable
-as Map<String, dynamic>?,
+as Map<String, dynamic>?,publicationError: freezed == publicationError ? _self.publicationError : publicationError // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

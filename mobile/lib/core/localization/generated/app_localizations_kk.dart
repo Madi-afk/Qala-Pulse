@@ -9,6 +9,55 @@ class AppLocalizationsKk extends AppLocalizations {
   AppLocalizationsKk([String locale = 'kk']) : super(locale);
 
   @override
+  String get sessionExpired =>
+      'Сессия аяқталды. Қайта кіріңіз; жобаңыз сақталды.';
+
+  @override
+  String get invalidCategory =>
+      'Санат енді қолжетімсіз. Басқасын таңдаңыз; фото, орын және мәтін сақталды.';
+
+  @override
+  String get publicationConflict =>
+      'Жіберу кілті басқа мазмұнмен байланысты. Түзетпес бұрын алдыңғы әрекеттің нәтижесін тексеріңіз.';
+
+  @override
+  String get uploadAlreadyUsed =>
+      'Фото басқа өтінішке тіркелген. Алдыңғы жіберуді тексеріңіз; түзету кезінде жаңа фото таңдаңыз.';
+
+  @override
+  String get publicationCancelled =>
+      'Алдыңғы әрекет тоқтатылды. Өңдеуді жалғастыру үшін нәтижесін тексеріңіз.';
+
+  @override
+  String get publicationUnknown =>
+      'Жіберу нәтижесі әзірге белгісіз. Қайталау сол кілтті пайдаланады және екінші көшірме жасамайды.';
+
+  @override
+  String get recoverPublication => 'Нәтижені тексеріп, түзету';
+
+  @override
+  String get discardDraft => 'Жобаны жою';
+
+  @override
+  String get discardDraftPrompt =>
+      'Жергілікті жобаны жою керек пе? Жіберу аяқталса, жасалған өтініш ашылады. Сервер қолжетімсіз болса, жоба сақталады.';
+
+  @override
+  String get searchHere => 'Осы жерден іздеу';
+
+  @override
+  String get refreshMap => 'Картаны жаңарту';
+
+  @override
+  String mapSearchArea(int radius) {
+    return 'Іздеу нүктесінен $radius м радиустағы өтініштер. Картаны жылжытып, «Осы жерден іздеу» түймесін басыңыз.';
+  }
+
+  @override
+  String get mapResultsLimited =>
+      'Алғашқы 200 өтініш көрсетілді. Картаны жақындатыңыз немесе санатты нақтылаңыз.';
+
+  @override
   String get appName => 'QalaPulse';
 
   @override

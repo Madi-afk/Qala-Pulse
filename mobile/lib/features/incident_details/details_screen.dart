@@ -42,6 +42,7 @@ class _DetailsScreenState extends ConsumerState<DetailsScreen> {
       ref.invalidate(timelineProvider(widget.id));
       ref.invalidate(commentsProvider(widget.id));
       ref.invalidate(feedProvider);
+      ref.read(incidentChangesProvider.notifier).changed();
       if (mounted) {
         ScaffoldMessenger.of(
           context,

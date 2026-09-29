@@ -4,7 +4,7 @@ from io import BytesIO
 from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Header, Query
+from fastapi import APIRouter, Header, HTTPException, Query
 from PIL import Image, ImageOps
 from sqlalchemy import func, select
 
@@ -19,6 +19,7 @@ from app.db.models import (
     IdempotencyRecord,
     Incident,
     IncidentMedia,
+    PublicationCancellation,
     TimelineEvent,
 )
 from app.repositories.incidents import get_visible, nearby, recalculate, serialize, visible_query
@@ -110,17 +111,41 @@ def create(
         item = db.get(Incident, previous.incident_id)
         assert item is not None
         return serialize(db, item)
-    if data.publish and not data.reviewed_by_user:
-        raise fail("review_required", "Проверьте результат перед публикацией", 422)
-    validate_category(db, data.category_id)
-    if len(set(data.upload_ids)) != len(data.upload_ids):
-        raise fail("duplicate_upload", "Файл указан несколько раз", 422)
-    uploads = [owned_upload(db, upload_id, user.id) for upload_id in data.upload_ids]
-    for upload in uploads:
-        if upload.media_type != "image" or not upload.redacted_key:
-            raise fail("redaction_required", "Изображение ещё не обработано", 422)
-        if db.scalar(select(IncidentMedia.id).where(IncidentMedia.upload_id == upload.id)):
-            raise fail("upload_already_used", "Файл уже опубликован", 409)
+    if db.scalar(
+        select(PublicationCancellation.id).where(
+            PublicationCancellation.user_id == user.id,
+            PublicationCancellation.key == idempotency_key,
+        )
+    ):
+        raise fail("publication_cancelled", "Попытка публикации отменена", 409)
+    try:
+        if data.publish and not data.reviewed_by_user:
+            raise fail("review_required", "Проверьте результат перед публикацией", 422)
+        validate_category(db, data.category_id)
+        if len(set(data.upload_ids)) != len(data.upload_ids):
+            raise fail("duplicate_upload", "Файл указан несколько раз", 422)
+        uploads = [owned_upload(db, upload_id, user.id) for upload_id in data.upload_ids]
+        for upload in uploads:
+            if upload.media_type != "image" or not upload.redacted_key:
+                raise fail("redaction_required", "Изображение ещё не обработано", 422)
+            if db.scalar(select(IncidentMedia.id).where(IncidentMedia.upload_id == upload.id)):
+                raise fail("upload_already_used", "Файл уже опубликован", 409)
+    except HTTPException as error:
+        if error.status_code == 422:
+            # Persist the refusal before responding: late copies of an earlier
+            # timed-out request must not succeed after a category is re-enabled.
+            db.add(PublicationCancellation(user_id=user.id, key=idempotency_key))
+            db.add(
+                AuditLog(
+                    actor_id=user.id,
+                    entity_type="publication",
+                    entity_id=user.id,
+                    action="publication_rejected",
+                    new_data={"key": idempotency_key},
+                )
+            )
+            db.commit()
+        raise
     analysis = uploads[0].analysis
     item = Incident(
         author_id=user.id,
@@ -175,6 +200,43 @@ def create(
     return serialize(db, item)
 
 
+@router.post("/incidents/publications/{key}/cancel")
+def cancel_publication(key: str, db: Db, user: Actor) -> dict[str, Any]:
+    from app.db.models import User
+
+    if not 8 <= len(key) <= 100:
+        raise fail("invalid_key", "Недопустимый ключ публикации", 422)
+    # Same lock as create: either observe its committed result, or fence out
+    # every late/retried POST before reporting that cancellation is safe.
+    db.scalar(select(User).where(User.id == user.id).with_for_update())
+    previous = db.scalar(
+        select(IdempotencyRecord).where(
+            IdempotencyRecord.user_id == user.id, IdempotencyRecord.key == key
+        )
+    )
+    if previous:
+        item = db.get(Incident, previous.incident_id)
+        assert item is not None
+        return {"status": "published", "incident": serialize(db, item)}
+    if not db.scalar(
+        select(PublicationCancellation.id).where(
+            PublicationCancellation.user_id == user.id, PublicationCancellation.key == key
+        )
+    ):
+        db.add(PublicationCancellation(user_id=user.id, key=key))
+        db.add(
+            AuditLog(
+                actor_id=user.id,
+                entity_type="publication",
+                entity_id=user.id,
+                action="publication_cancelled",
+                new_data={"key": key},
+            )
+        )
+        db.flush()
+    return {"status": "cancelled"}
+
+
 @router.get("/incidents")
 def list_incidents(
     db: Db,
@@ -218,12 +280,12 @@ def nearby_incidents(
     category_id: CategoryCode | None = None,
     limit: int = Query(100, ge=1, le=200),
 ) -> dict[str, Any]:
+    items = nearby(db, latitude, longitude, radius, category_id, limit=limit + 1)
     return {
-        "items": [
-            serialize(db, item)
-            for item in nearby(db, latitude, longitude, radius, category_id, limit=limit)
-        ],
+        "items": [serialize(db, item) for item in items[:limit]],
         "limit": limit,
+        "has_more": len(items) > limit,
+        "radius_meters": radius,
     }
 
 

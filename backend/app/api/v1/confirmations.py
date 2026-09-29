@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Query
 from sqlalchemy import select
 
-from app.api.deps import Actor, Db
+from app.api.deps import Actor, Db, require_role
 from app.core.errors import fail
 from app.db.base import utcnow
 from app.db.models import (
@@ -24,12 +24,14 @@ router = APIRouter(tags=["community"])
 
 @router.post("/incidents/{incident_id}/confirmations", status_code=201)
 def confirm(incident_id: UUID, data: ConfirmationCreate, db: Db, user: Actor) -> dict[str, Any]:
+    require_role(user, "citizen")
     item = get_visible(db, incident_id, lock=True)
     if db.scalar(
         select(IncidentConfirmation).where(
             IncidentConfirmation.incident_id == incident_id,
             IncidentConfirmation.user_id == user.id,
             IncidentConfirmation.status == data.status,
+            IncidentConfirmation.resolution_cycle == item.resolution_cycle,
         )
     ):
         raise fail("already_confirmed", "Вы уже отправили это подтверждение", 409)
@@ -40,11 +42,23 @@ def confirm(incident_id: UUID, data: ConfirmationCreate, db: Db, user: Actor) ->
         "resolved",
     ):
         raise fail("invalid_status", "Сначала требуется отметка о выполнении", 409)
+    already_supports = db.scalar(
+        select(IncidentConfirmation.id)
+        .where(
+            IncidentConfirmation.incident_id == incident_id,
+            IncidentConfirmation.user_id == user.id,
+            IncidentConfirmation.status == "still_exists",
+        )
+        .limit(1)
+    )
     confirmation = IncidentConfirmation(
-        incident_id=incident_id, user_id=user.id, **data.model_dump()
+        incident_id=incident_id,
+        user_id=user.id,
+        resolution_cycle=item.resolution_cycle,
+        **data.model_dump(),
     )
     db.add(confirmation)
-    if data.status == "still_exists":
+    if data.status == "still_exists" and not already_supports:
         item.confirmation_count += 1
     old_status = item.status
     if data.status == "resolved" and item.status == "resolved_pending_confirmation":
@@ -64,11 +78,20 @@ def confirm(incident_id: UUID, data: ConfirmationCreate, db: Db, user: Actor) ->
             entity_id=item.id,
             action="confirmation",
             old_data={"status": old_status},
-            new_data={"status": item.status, "confirmation": data.status},
+            new_data={
+                "status": item.status,
+                "confirmation": data.status,
+                "resolution_cycle": item.resolution_cycle,
+            },
         )
     )
     db.flush()
-    return {"id": confirmation.id, "status": confirmation.status, "incident_status": item.status}
+    return {
+        "id": confirmation.id,
+        "status": confirmation.status,
+        "incident_status": item.status,
+        "resolution_cycle": item.resolution_cycle,
+    }
 
 
 @router.get("/incidents/{incident_id}/confirmations")
@@ -88,6 +111,7 @@ def confirmations(
             {
                 "id": row.id,
                 "status": row.status,
+                "resolution_cycle": row.resolution_cycle,
                 "comment": row.comment,
                 "created_at": row.created_at,
             }

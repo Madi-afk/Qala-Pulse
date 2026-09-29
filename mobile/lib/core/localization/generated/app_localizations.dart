@@ -98,6 +98,84 @@ abstract class AppLocalizations {
     Locale('ru'),
   ];
 
+  /// No description provided for @sessionExpired.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сессия завершена. Войдите снова; ваш черновик сохранён.'**
+  String get sessionExpired;
+
+  /// No description provided for @invalidCategory.
+  ///
+  /// In ru, this message translates to:
+  /// **'Категория больше недоступна. Выберите другую; фото, точка и текст сохранены.'**
+  String get invalidCategory;
+
+  /// No description provided for @publicationConflict.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ключ отправки связан с другим содержимым. Проверьте результат предыдущей попытки перед исправлением.'**
+  String get publicationConflict;
+
+  /// No description provided for @uploadAlreadyUsed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Фото уже связано с обращением. Проверьте предыдущую отправку; при исправлении выберите новое фото.'**
+  String get uploadAlreadyUsed;
+
+  /// No description provided for @publicationCancelled.
+  ///
+  /// In ru, this message translates to:
+  /// **'Предыдущая попытка отменена. Проверьте результат, чтобы продолжить редактирование.'**
+  String get publicationCancelled;
+
+  /// No description provided for @publicationUnknown.
+  ///
+  /// In ru, this message translates to:
+  /// **'Результат отправки пока неизвестен. Повтор использует тот же ключ и не создаст вторую копию.'**
+  String get publicationUnknown;
+
+  /// No description provided for @recoverPublication.
+  ///
+  /// In ru, this message translates to:
+  /// **'Проверить исход и исправить'**
+  String get recoverPublication;
+
+  /// No description provided for @discardDraft.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить черновик'**
+  String get discardDraft;
+
+  /// No description provided for @discardDraftPrompt.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить локальный черновик? Если отправка уже завершилась, откроется созданное обращение. При недоступном сервере черновик останется сохранённым.'**
+  String get discardDraftPrompt;
+
+  /// No description provided for @searchHere.
+  ///
+  /// In ru, this message translates to:
+  /// **'Искать здесь'**
+  String get searchHere;
+
+  /// No description provided for @refreshMap.
+  ///
+  /// In ru, this message translates to:
+  /// **'Обновить карту'**
+  String get refreshMap;
+
+  /// No description provided for @mapSearchArea.
+  ///
+  /// In ru, this message translates to:
+  /// **'Обращения в радиусе {radius} м от точки поиска. Переместите карту и нажмите «Искать здесь».'**
+  String mapSearchArea(int radius);
+
+  /// No description provided for @mapResultsLimited.
+  ///
+  /// In ru, this message translates to:
+  /// **'Показаны первые 200 обращений. Приблизьте карту или уточните категорию.'**
+  String get mapResultsLimited;
+
   /// No description provided for @appName.
   ///
   /// In ru, this message translates to:

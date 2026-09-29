@@ -79,6 +79,7 @@ class Incident(Entity, Base):
     is_published: Mapped[bool] = mapped_column(Boolean, default=True)
     is_hidden: Mapped[bool] = mapped_column(Boolean, default=False)
     confirmation_count: Mapped[int] = mapped_column(default=0)
+    resolution_cycle: Mapped[int] = mapped_column(default=0, server_default="0")
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow
     )
@@ -113,10 +114,15 @@ class IncidentMedia(Entity, Base):
 
 class IncidentConfirmation(Entity, Base):
     __tablename__ = "incident_confirmations"
-    __table_args__ = (UniqueConstraint("incident_id", "user_id", "status"),)
+    __table_args__ = (
+        UniqueConstraint(
+            "incident_id", "user_id", "status", "resolution_cycle", name="uq_confirmation_cycle"
+        ),
+    )
     incident_id: Mapped[UUID] = mapped_column(ForeignKey("incidents.id"), index=True)
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), index=True)
     status: Mapped[str] = mapped_column(String(30))
+    resolution_cycle: Mapped[int] = mapped_column(default=0, server_default="0")
     comment: Mapped[str | None] = mapped_column(String(1000))
 
 
@@ -202,3 +208,10 @@ class IdempotencyRecord(Entity, Base):
     key: Mapped[str] = mapped_column(String(100))
     request_hash: Mapped[str] = mapped_column(String(64))
     incident_id: Mapped[UUID] = mapped_column(ForeignKey("incidents.id"))
+
+
+class PublicationCancellation(Entity, Base):
+    __tablename__ = "publication_cancellations"
+    __table_args__ = (UniqueConstraint("user_id", "key"),)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
+    key: Mapped[str] = mapped_column(String(100))

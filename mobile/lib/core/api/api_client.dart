@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/environment.dart';
 import '../storage/token_store.dart';
+import '../storage/session_manager.dart';
 
 final tokenStoreProvider = Provider<TokenStore>((ref) => SecureTokenStore());
 final apiProvider = Provider<ApiClient>(
@@ -10,7 +11,8 @@ final apiProvider = Provider<ApiClient>(
 
 class ApiClient {
   ApiClient(this.tokens, {Dio? client, Dio? refreshClient})
-    : dio = client ?? Dio(),
+    : sessions = SessionManager(tokens),
+      dio = client ?? Dio(),
       refreshDio = refreshClient ?? Dio() {
     for (final client in [dio, refreshDio]) {
       client.options = BaseOptions(
@@ -23,7 +25,22 @@ class ApiClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final session = await tokens.read();
+          final startedGeneration = sessions.generation;
+          final session = await sessions.read();
+          options.extra.putIfAbsent(
+            'sessionGeneration',
+            () => startedGeneration,
+          );
+          options.extra.putIfAbsent('sessionUser', () => session?.user.id);
+          if (options.extra['sessionGeneration'] != sessions.generation ||
+              options.extra['sessionUser'] != session?.user.id) {
+            return handler.reject(
+              DioException(
+                requestOptions: options,
+                type: DioExceptionType.cancel,
+              ),
+            );
+          }
           if (session != null) {
             options.headers['Authorization'] = 'Bearer ${session.access}';
           }
@@ -36,13 +53,23 @@ class ApiClient {
             return handler.next(error);
           }
           try {
-            final session = await tokens.read();
+            final generation = error.requestOptions.extra['sessionGeneration'];
+            if (generation != sessions.generation) return handler.next(error);
+            final session = await sessions.read();
             if (session == null) return handler.next(error);
+            if (session.user.id != error.requestOptions.extra['sessionUser']) {
+              return handler.next(error);
+            }
             if (error.requestOptions.headers['Authorization'] ==
                 'Bearer ${session.access}') {
-              _refreshing ??= _refresh(
-                session,
-              ).whenComplete(() => _refreshing = null);
+              if (_refreshGeneration != generation || _refreshing == null) {
+                _refreshGeneration = generation as int;
+                final pending = _refresh(session, generation);
+                _refreshing = pending;
+                pending.whenComplete(() {
+                  if (identical(_refreshing, pending)) _refreshing = null;
+                }).ignore();
+              }
               await _refreshing;
             }
             final options = error.requestOptions;
@@ -50,8 +77,13 @@ class ApiClient {
             if (options.data is FormData) {
               options.data = (options.data as FormData).clone();
             }
-            final refreshed = await tokens.read();
-            options.headers['Authorization'] = 'Bearer ${refreshed?.access}';
+            final refreshed = await sessions.read();
+            if (sessions.generation != generation ||
+                refreshed == null ||
+                refreshed.user.id != session.user.id) {
+              return handler.next(error);
+            }
+            options.headers['Authorization'] = 'Bearer ${refreshed.access}';
             handler.resolve(await dio.fetch<dynamic>(options));
           } catch (_) {
             handler.next(error);
@@ -61,25 +93,31 @@ class ApiClient {
     );
   }
   final TokenStore tokens;
+  final SessionManager sessions;
   final Dio dio;
   final Dio refreshDio;
   Future<void>? _refreshing;
+  int? _refreshGeneration;
 
-  Future<void> _refresh(SessionTokens session) async {
+  Future<void> _refresh(SessionTokens session, int generation) async {
     try {
       final result = (await refreshDio.post<Map<String, dynamic>>(
         '/auth/refresh',
         data: {'refresh_token': session.refresh},
       )).data!;
-      await tokens.write(
+      await sessions.replace(
         SessionTokens(
           result['access_token'] as String,
           result['refresh_token'] as String,
           session.user,
         ),
+        generation,
+        expectedRefresh: session.refresh,
       );
     } on DioException catch (error) {
-      if (error.response?.statusCode == 401) await tokens.clear();
+      if (error.response?.statusCode == 401) {
+        await sessions.clear(expiration: true, expectedGeneration: generation);
+      }
       rethrow;
     }
   }

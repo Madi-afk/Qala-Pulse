@@ -31,6 +31,7 @@ class _CreateScreenState extends ConsumerState<CreateScreen> {
   List<Map<String, dynamic>>? candidates;
   Uint8List? photo, preview;
   String? loadedPhoto;
+  String? displayedOwner;
   final picker = ImagePicker();
 
   @override
@@ -114,6 +115,12 @@ class _CreateScreenState extends ConsumerState<CreateScreen> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authProvider).asData?.value;
+    if (displayedOwner != user?.id) {
+      displayedOwner = user?.id;
+      photo = preview = null;
+      loadedPhoto = null;
+      candidates = null;
+    }
     if (user == null) {
       return Center(
         child: FilledButton(
@@ -175,6 +182,20 @@ class _CreateScreenState extends ConsumerState<CreateScreen> {
           Notice(
             '${context.l.waitingToSend}\n${context.l.pendingLocked}',
             icon: Icons.cloud_upload_outlined,
+          ),
+        if (draft.publicationError != null)
+          Notice(publicationMessage(draft.publicationError!, context.l)),
+        if (draft.pendingPayload != null)
+          OutlinedButton(
+            onPressed: busy
+                ? null
+                : () => run(() async {
+                    final result = await controller.cancelPending();
+                    if (context.mounted && result != null) {
+                      context.go('/success/${result.id}');
+                    }
+                  }),
+            child: Text(context.l.recoverPublication),
           ),
         if (step == 0) ...[
           if (photo != null)
@@ -539,6 +560,36 @@ class _CreateScreenState extends ConsumerState<CreateScreen> {
             child: Text(context.l.back),
           ),
         const SizedBox(height: 12),
+        TextButton.icon(
+          onPressed: busy
+              ? null
+              : () => run(() async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (dialogContext) => AlertDialog(
+                      title: Text(context.l.discardDraft),
+                      content: Text(context.l.discardDraftPrompt),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogContext, false),
+                          child: Text(context.l.back),
+                        ),
+                        FilledButton(
+                          onPressed: () => Navigator.pop(dialogContext, true),
+                          child: Text(context.l.discardDraft),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed != true) return;
+                  final result = await controller.cancelPending(discard: true);
+                  if (context.mounted && result != null) {
+                    context.go('/success/${result.id}');
+                  }
+                }),
+          icon: const Icon(Icons.delete_outline),
+          label: Text(context.l.discardDraft),
+        ),
         Center(
           child: Text(
             context.l.draftSaved,

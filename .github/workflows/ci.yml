@@ -27,21 +27,15 @@ jobs:
       - run: pytest -q -m 'not integration' --cov=app --cov-report=term-missing
   integration:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - run: python scripts/setup_env.py
-      - run: docker compose up --build -d --wait
-      - run: docker compose exec -T backend python -m app.seed
       - run: pip install -r backend/requirements.lock -e './backend[dev]'
-      - run: RUN_INTEGRATION=1 pytest backend/tests/test_integration.py -q
-      - if: failure()
-        run: docker compose logs --tail=100 backend worker
-      - if: always()
-        run: docker compose down
+      - name: Real Compose integration (PostGIS, MinIO, Redis, Celery)
+        run: python scripts/run_integration.py
   flutter:
     runs-on: ubuntu-latest
     defaults:

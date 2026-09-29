@@ -116,6 +116,7 @@ _IncidentDraft _$IncidentDraftFromJson(Map<String, dynamic> json) =>
       audioUploadId: json['audioUploadId'] as String?,
       analysis: json['analysis'] as Map<String, dynamic>?,
       pendingPayload: json['pendingPayload'] as Map<String, dynamic>?,
+      publicationError: json['publicationError'] as String?,
     );
 
 Map<String, dynamic> _$IncidentDraftToJson(_IncidentDraft instance) =>
@@ -139,4 +140,5 @@ Map<String, dynamic> _$IncidentDraftToJson(_IncidentDraft instance) =>
       'audioUploadId': instance.audioUploadId,
       'analysis': instance.analysis,
       'pendingPayload': instance.pendingPayload,
+      'publicationError': instance.publicationError,
     };

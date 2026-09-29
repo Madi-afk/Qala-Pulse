@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:qalapulse/core/storage/token_store.dart';
 import 'package:qalapulse/shared/models/models.dart';
 
@@ -9,6 +10,31 @@ const testUser = AppUser(
   email: 'test@example.com',
   displayName: 'Тест',
 );
+
+/// Drive Dio's queued events using the widget test clock rather than real I/O.
+Future<T> settleAction<T>(WidgetTester tester, Future<T> action) async {
+  var done = false;
+  late T result;
+  Object? failure;
+  StackTrace? trace;
+  action.then(
+    (value) {
+      result = value;
+      done = true;
+    },
+    onError: (Object error, StackTrace stack) {
+      failure = error;
+      trace = stack;
+      done = true;
+    },
+  );
+  for (var tick = 0; tick < 100 && !done; tick++) {
+    await tester.pump(const Duration(milliseconds: 20));
+  }
+  expect(done, isTrue, reason: 'Asynchronous widget action did not settle');
+  if (failure != null) Error.throwWithStackTrace(failure!, trace!);
+  return result;
+}
 
 class MemoryTokens implements TokenStore {
   MemoryTokens([this.value]);

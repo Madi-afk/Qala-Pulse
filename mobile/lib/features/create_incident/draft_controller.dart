@@ -55,6 +55,9 @@ class DraftController extends Notifier<IncidentDraft> {
       IncidentDraft(key: const Uuid().v4());
 
   Future<void> update(IncidentDraft draft) {
+    if (state.pendingPayload != null && draft != state) {
+      throw StateError('publication_locked');
+    }
     state = draft;
     final store = ref.read(draftStoreProvider);
     _saving = _saving.catchError((Object _) {}).then((_) => store.save(draft));
@@ -62,7 +65,9 @@ class DraftController extends Notifier<IncidentDraft> {
   }
 
   Future<void> setPhoto(XFile photo) async {
+    final owner = ref.read(draftStoreProvider).owner;
     final bytes = await photo.readAsBytes();
+    _requireOwner(owner);
     if (bytes.length > 10 * 1024 * 1024) throw StateError('photo_too_large');
     if (kIsWeb) {
       await update(
@@ -80,6 +85,7 @@ class DraftController extends Notifier<IncidentDraft> {
         '${directory.path}/qalapulse-${state.key}-${const Uuid().v4()}.jpg',
       );
       await target.writeAsBytes(bytes, flush: true);
+      _requireOwner(owner);
       await update(
         state.copyWith(
           photoPath: target.path,
@@ -98,8 +104,10 @@ class DraftController extends Notifier<IncidentDraft> {
   }
 
   Future<String> uploadPhoto() async {
+    final owner = ref.read(draftStoreProvider).owner;
     if (state.uploadId != null) return state.uploadId!;
     final bytes = await photoBytes();
+    _requireOwner(owner);
     final mime = bytes.length > 3 && bytes[0] == 0x89
         ? 'image/png'
         : bytes.length > 12 &&
@@ -119,12 +127,15 @@ class DraftController extends Notifier<IncidentDraft> {
           }),
         );
     final id = response['id'] as String;
+    _requireOwner(owner);
     await update(state.copyWith(uploadId: id));
     return id;
   }
 
   Future<void> analyze(String language) async {
+    final owner = ref.read(draftStoreProvider).owner;
     final upload = await uploadPhoto();
+    _requireOwner(owner);
     final response = await ref.read(apiProvider).post('/incidents/analyze', {
       'upload_id': upload,
       'description': state.description,
@@ -132,6 +143,7 @@ class DraftController extends Notifier<IncidentDraft> {
       'cloud_consent': state.cloudConsent,
     });
     final result = response['result'] as Map<String, dynamic>;
+    _requireOwner(owner);
     await update(
       state.copyWith(
         analysis: response,
@@ -162,11 +174,14 @@ class DraftController extends Notifier<IncidentDraft> {
   Future<Incident> publish() async {
     if (_publishing) throw StateError('publication_in_progress');
     _publishing = true;
+    final store = ref.read(draftStoreProvider);
     try {
       await _saving;
+      _requireOwner(store.owner);
       if (state.pendingPayload == null) {
         if (!state.reviewed) throw StateError('review_required');
         final upload = await uploadPhoto();
+        _requireOwner(store.owner);
         final payload = {
           'title': state.title,
           'description': state.description,
@@ -181,23 +196,116 @@ class DraftController extends Notifier<IncidentDraft> {
           'cloud_consent': state.cloudConsent,
         };
         await update(
-          state.copyWith(pendingPayload: payload, waitingToSend: true, step: 6),
+          state.copyWith(
+            pendingPayload: payload,
+            waitingToSend: true,
+            step: 6,
+            publicationError: null,
+          ),
         );
       }
+      _requireOwner(store.owner);
       final incident = await ref
           .read(repositoryProvider)
           .publish(state.pendingPayload!, state.key);
-      await clear();
-      ref.invalidate(feedProvider);
+      await _clearOwned(store);
+      ref.read(incidentChangesProvider.notifier).changed();
       return incident;
+    } on DioException catch (error) {
+      final body = error.response?.data;
+      final detail = body is Map ? body['error'] : null;
+      final code = detail is Map ? detail['code'] as String? : null;
+      final saved = store.load();
+      if (saved?.pendingPayload != null) {
+        final definitive =
+            error.response?.statusCode == 422 &&
+            {
+              'invalid_category',
+              'review_required',
+              'duplicate_upload',
+              'redaction_required',
+            }.contains(code);
+        final next = definitive
+            ? saved!.copyWith(
+                key: const Uuid().v4(),
+                pendingPayload: null,
+                waitingToSend: false,
+                reviewed: false,
+                step: 4,
+                publicationError: code,
+              )
+            : saved!.copyWith(publicationError: code ?? 'publication_unknown');
+        await store.save(next);
+        if (ref.read(draftStoreProvider).owner == store.owner) state = next;
+        if (definitive) ref.invalidate(categoriesProvider);
+      }
+      rethrow;
     } finally {
       _publishing = false;
     }
   }
 
   Future<void> clear() async {
+    if (state.pendingPayload != null) throw StateError('publication_locked');
+    await _clearOwned(ref.read(draftStoreProvider));
+  }
+
+  void _requireOwner(String owner) {
+    if (ref.read(draftStoreProvider).owner != owner) {
+      throw StateError('session_changed');
+    }
+  }
+
+  Future<void> _clearOwned(DraftStore store) async {
     await _saving;
-    await ref.read(draftStoreProvider).clear();
-    state = IncidentDraft(key: const Uuid().v4());
+    await store.clear();
+    if (ref.read(draftStoreProvider).owner == store.owner) {
+      state = IncidentDraft(key: const Uuid().v4());
+    }
+  }
+
+  /// A server fence also blocks an earlier POST that has not acquired its lock yet.
+  Future<Incident?> cancelPending({bool discard = false}) async {
+    if (_publishing) throw StateError('publication_in_progress');
+    _publishing = true;
+    final store = ref.read(draftStoreProvider);
+    final draft = state;
+    try {
+      await _saving;
+      _requireOwner(store.owner);
+      if (draft.pendingPayload != null) {
+        final result = await ref
+            .read(apiProvider)
+            .post('/incidents/publications/${draft.key}/cancel', {});
+        if (result['status'] == 'published') {
+          final incident = Incident.fromJson(
+            result['incident'] as Map<String, dynamic>,
+          );
+          await _clearOwned(store);
+          ref.read(incidentChangesProvider.notifier).changed();
+          return incident;
+        }
+        if (result['status'] != 'cancelled') {
+          throw StateError('publication_unknown');
+        }
+      }
+      if (discard) {
+        await _clearOwned(store);
+      } else {
+        final editable = draft.copyWith(
+          key: const Uuid().v4(),
+          pendingPayload: null,
+          waitingToSend: false,
+          reviewed: false,
+          publicationError: null,
+          step: 4,
+        );
+        await store.save(editable);
+        if (ref.read(draftStoreProvider).owner == store.owner) state = editable;
+      }
+      return null;
+    } finally {
+      _publishing = false;
+    }
   }
 }

@@ -92,7 +92,14 @@ def moderate(incident_id: UUID, data: StatusChange, db: Db, user: Actor) -> dict
         select(IncidentAssignment).where(IncidentAssignment.incident_id == item.id)
     ):
         raise fail("assignment_required", "Сначала назначьте организацию", 409)
-    old = {"status": item.status, "category_id": item.category_id, "is_hidden": item.is_hidden}
+    old = {
+        "status": item.status,
+        "category_id": item.category_id,
+        "is_hidden": item.is_hidden,
+        "resolution_cycle": item.resolution_cycle,
+    }
+    if data.status == "resolved_pending_confirmation" and item.status != data.status:
+        item.resolution_cycle += 1
     item.status = data.status
     if data.category_id:
         validate_category(db, data.category_id)
@@ -109,7 +116,8 @@ def moderate(incident_id: UUID, data: StatusChange, db: Db, user: Actor) -> dict
             entity_id=item.id,
             action="moderate",
             old_data=old,
-            new_data=data.model_dump(exclude_none=True),
+            new_data=data.model_dump(exclude_none=True)
+            | {"resolution_cycle": item.resolution_cycle},
         )
     )
     recalculate(db, item)

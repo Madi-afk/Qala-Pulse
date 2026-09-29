@@ -87,7 +87,10 @@ def test_review_required_and_private_draft(client, headers, incident_payload):
         publish(client, headers, {**incident_payload, "reviewed_by_user": False}).status_code == 422
     )
     draft = publish(
-        client, headers, {**incident_payload, "reviewed_by_user": False, "publish": False}
+        client,
+        headers,
+        {**incident_payload, "reviewed_by_user": False, "publish": False},
+        key="corrected-draft-0001",
     ).json()
     assert client.get("/api/v1/incidents").json()["total"] == 0
     assert client.get(f"/api/v1/incidents/{draft['id']}").status_code == 404

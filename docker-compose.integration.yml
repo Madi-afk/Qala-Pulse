@@ -1,0 +1,13 @@
+# Used only with scripts/run_integration.py; never mounts development volumes.
+services:
+  postgres:
+    ports: !override ["127.0.0.1:${CHECK_POSTGRES_PORT}:5432"]
+  redis:
+    ports: !override ["127.0.0.1:${CHECK_REDIS_PORT}:6379"]
+  minio:
+    ports: !override ["127.0.0.1:${CHECK_MINIO_PORT}:9000", "127.0.0.1:${CHECK_CONSOLE_PORT}:9001"]
+  backend:
+    env_file: !override ["${CHECK_ENV_FILE}"]
+    ports: !override ["127.0.0.1:${CHECK_API_PORT}:8000"]
+  worker:
+    env_file: !override ["${CHECK_ENV_FILE}"]

@@ -86,6 +86,7 @@ abstract class IncidentDraft with _$IncidentDraft {
     String? audioUploadId,
     Map<String, dynamic>? analysis,
     Map<String, dynamic>? pendingPayload,
+    String? publicationError,
   }) = _IncidentDraft;
   factory IncidentDraft.fromJson(Map<String, dynamic> json) =>
       _$IncidentDraftFromJson(json);

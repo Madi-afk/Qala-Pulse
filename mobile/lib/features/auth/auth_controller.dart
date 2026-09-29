@@ -9,8 +9,14 @@ final authProvider = AsyncNotifierProvider<AuthController, AppUser?>(
 
 class AuthController extends AsyncNotifier<AppUser?> {
   @override
-  Future<AppUser?> build() async =>
-      (await ref.read(tokenStoreProvider).read())?.user;
+  Future<AppUser?> build() async {
+    final sessions = ref.read(apiProvider).sessions;
+    final subscription = sessions.changes.stream.listen((session) {
+      state = AsyncData(session?.user);
+    });
+    ref.onDispose(subscription.cancel);
+    return (await sessions.read())?.user;
+  }
 
   Future<void> authenticate({
     required String email,
@@ -18,8 +24,10 @@ class AuthController extends AsyncNotifier<AppUser?> {
     String? name,
     String language = 'ru',
   }) async {
+    final sessions = ref.read(apiProvider).sessions;
+    final generation = sessions.beginChange();
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
+    final result = await AsyncValue.guard(() async {
       final response = await ref
           .read(apiProvider)
           .post(name == null ? '/auth/login' : '/auth/register', {
@@ -29,35 +37,28 @@ class AuthController extends AsyncNotifier<AppUser?> {
             if (name != null) 'preferred_language': language,
           });
       final user = AppUser.fromJson(response['user'] as Map<String, dynamic>);
-      await ref
-          .read(tokenStoreProvider)
-          .write(
-            SessionTokens(
-              response['access_token'] as String,
-              response['refresh_token'] as String,
-              user,
-            ),
-          );
+      await sessions.replace(
+        SessionTokens(
+          response['access_token'] as String,
+          response['refresh_token'] as String,
+          user,
+        ),
+        generation,
+      );
       return user;
     });
+    if (sessions.generation == generation) state = result;
   }
 
   Future<void> logout() async {
-    final store = ref.read(tokenStoreProvider);
-    final session = await store.read();
-    try {
-      if (session != null) {
-        await ref
-            .read(apiProvider)
-            .dio
-            .post<void>(
-              '/auth/logout',
-              data: {'refresh_token': session.refresh},
-            );
-      }
-    } finally {
-      await store.clear();
-      state = const AsyncData(null);
+    final api = ref.read(apiProvider);
+    final session = await api.sessions.read();
+    await api.sessions.clear();
+    if (session != null) {
+      await ref
+          .read(apiProvider)
+          .dio
+          .post<void>('/auth/logout', data: {'refresh_token': session.refresh});
     }
   }
 }

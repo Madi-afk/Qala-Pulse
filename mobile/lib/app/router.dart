@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/api/api_client.dart';
+import '../features/auth/auth_controller.dart';
 import 'package:go_router/go_router.dart';
 import '../core/localization/strings.dart';
 import '../features/auth/auth_screen.dart';
@@ -94,12 +97,13 @@ class SuccessScreen extends StatelessWidget {
   );
 }
 
-class AppShell extends StatelessWidget {
+class AppShell extends ConsumerWidget {
   const AppShell({super.key, required this.path, required this.child});
   final String path;
   final Widget child;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(authProvider);
     const paths = ['/home', '/map', '/create', '/notifications', '/profile'];
     return Scaffold(
       appBar: AppBar(
@@ -122,7 +126,22 @@ class AppShell extends StatelessWidget {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 900),
-            child: child,
+            child: Column(
+              children: [
+                if (auth.asData?.value == null &&
+                    ref.read(apiProvider).sessions.expired)
+                  MaterialBanner(
+                    content: Text(context.l.sessionExpired),
+                    actions: [
+                      TextButton(
+                        onPressed: () => context.push('/auth'),
+                        child: Text(context.l.login),
+                      ),
+                    ],
+                  ),
+                Expanded(child: child),
+              ],
+            ),
           ),
         ),
       ),
