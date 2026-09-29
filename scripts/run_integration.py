@@ -58,21 +58,25 @@ def main() -> None:
         "-f",
         "docker-compose.integration.yml",
     ]
+    compose_env = os.environ | values
     print(f"Isolated integration project: {project}", flush=True)
     try:
         subprocess.run(
             [*compose, "up", "--build", "-d", "--wait", "--wait-timeout", "240"],
             cwd=ROOT,
+            env=compose_env,
             check=True,
         )
         subprocess.run(
             [*compose, "exec", "-T", "backend", "python", "-m", "app.seed"],
             cwd=ROOT,
+            env=compose_env,
             check=True,
         )
         subprocess.run(
             [*compose, "exec", "-T", "backend", "alembic", "current"],
             cwd=ROOT,
+            env=compose_env,
             check=True,
         )
         env = os.environ | {
@@ -105,13 +109,17 @@ def main() -> None:
         subprocess.run(
             [*compose, "logs", "--tail=60", "backend", "worker", "minio-init"],
             cwd=ROOT,
+            env=compose_env,
             check=False,
         )
         raise
     finally:
         # The generated project name is the boundary: no existing project is removed.
         subprocess.run(
-            [*compose, "down", "--volumes", "--remove-orphans"], cwd=ROOT, check=True
+            [*compose, "down", "--volumes", "--remove-orphans"],
+            cwd=ROOT,
+            env=compose_env,
+            check=True,
         )
         artifact.unlink(missing_ok=True)
 

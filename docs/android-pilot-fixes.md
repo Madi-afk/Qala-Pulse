@@ -13,6 +13,7 @@
 | Flutter: refresh 401 не обновляет UI, поздний ответ меняет чужую сессию | SessionManager с событиями, поколениями сессии и сериализацией secure storage | `core/storage/session_manager.dart`, `core/api/api_client.dart`, `auth_controller.dart`, `app/router.dart` | Финальный 401 → вход; временная ошибка сохраняет сессию; поздние 200/401 после logout/смены аккаунта; черновик исходного пользователя |
 | Flutter: карта устаревает и запрашивает старый центр | Общая ревизия Incident, ручной refresh, viewport + «Искать здесь», family по центру/радиусу/категории, предупреждение о лимите | `map_screen.dart`, `city_map.dart`, `incident_repository.dart`, nearby API | Маркер после публикации; resolved-маркер после подтверждения; перемещение/фильтр; старый ответ не заменяет новый; ошибка и повтор |
 | CI: MinIO-init не скачивается | Сборка из закреплённых официальных MinIO/mc исходников на базах по digest; изолированный реальный Compose runner | `infrastructure/minio/Dockerfile`, Compose, `scripts/run_integration.py`, `.github/workflows/ci.yml` | Настоящий pull баз, сборка, readiness, Alembic, synthetic seed, исходные два integration-теста + два новых |
+| Backend: быстрый запрос после регистрации получает 401 | DB dependency завершается с commit до отправки HTTP-ответа, ошибка commit не выдаёт ложный успех | `backend/app/api/deps.py`, `tests/test_transaction_lifecycle.py` | Детерминированный ASGI-тест порядка commit/response и тест ошибки commit; реальный CI |
 
 Новые backend-регрессии сначала воспроизвели 5 падений на исходном коде: четыре обхода роли и блокировку повторного `still_exists`. Две Flutter-регрессии воспроизвели отсутствие обновления auth state и заблокированный после 422 payload. Причина Integration CI подтверждена [логом старого job](https://github.com/Madi-afk/Qala-Pulse/actions/runs/36584856108/job/109462333697), а не предположением по Compose.
 
@@ -51,9 +52,13 @@ dart format --output=none --set-exit-if-changed lib test
 flutter build apk --debug --dart-define=API_BASE_URL=http://10.0.2.2:8000/api/v1
 ```
 
-Локально: Ruff check/format и mypy прошли; **35 backend unit/API**, **4 реальные integration** и **30 Flutter tests** прошли. Flutter analyze — без замечаний; Dart format — 45 файлов без изменений. Результат APK фиксируется после завершения сборки. В integration остаются предупреждения upstream Starlette/AnyIO deprecation, reflection geography в миграционном тесте и локального Windows pytest cache; они не заменяют и не отключают проверки PostGIS.
+Локально: Ruff check/format и mypy прошли; **37 backend unit/API**, **4 реальные integration** и **30 Flutter tests** прошли. Flutter analyze — без замечаний; Dart format — 45 файлов без изменений. Android debug build завершился успешно: `mobile/build/app/outputs/flutter-apk/app-debug.apk` (API для эмулятора `10.0.2.2:8000`). APK не добавлен в Git. В integration остаются предупреждения upstream Starlette/AnyIO deprecation, reflection geography в миграционном тесте и локального Windows pytest cache; они не заменяют и не отключают проверки PostGIS.
 
-Удалённый CI: результат будет зафиксирован по фактическому запуску ветки. Локальный успешный прогон сам по себе не считается подтверждением GitHub Actions.
+Удалённые запуски и статусы отдельных jobs доступны в [Checks draft PR #1](https://github.com/Madi-afk/Qala-Pulse/pull/1/checks). Итоговая ссылка проверенного запуска также указана в отчёте PR. Локальный успешный прогон сам по себе не считается подтверждением GitHub Actions.
+
+Первый [прогон исправлений](https://github.com/Madi-afk/Qala-Pulse/actions/runs/36606489411) подтвердил сборку MinIO, миграции, seed, исходные интеграционные тесты и сохранение миграционных данных; Backend и Flutter прошли. Новый concurrency-тест получил 401 на первом запросе после регистрации. Дополнительный тест воспроизвёл порядок «HTTP response → commit»: клиент мог получить JWT до появления пользователя в другой транзакции. Исправление — `Depends(get_db, scope="function")`, с commit до ответа, по [официальному контракту FastAPI](https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#early-exit-and-scope). Ошибка не обходится sleep/retry или ослаблением авторизации.
+
+Тестовая конфигурация отключает dotenv-файлы, а Compose runner передаёт сгенерированные параметры поверх унаследованных переменных среды. Исходные настройки пользователя не нужны для проверки.
 
 ## Протокол восстановления и ограничения
 

@@ -9,6 +9,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
+from app.core.config import Settings
+
+# Tests must not load developer/pilot credentials from either local dotenv file.
+Settings.model_config["env_file"] = None
 os.environ.update(
     ENVIRONMENT="test",
     DATABASE_URL="sqlite://",

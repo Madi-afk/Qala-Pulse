@@ -11,7 +11,8 @@ from app.core.errors import fail
 from app.db.models import User
 from app.db.session import get_db
 
-Db = Annotated[Session, Depends(get_db)]
+# Commit (or fail) before exposing success/tokens to a fast subsequent request.
+Db = Annotated[Session, Depends(get_db, scope="function")]
 bearer = HTTPBearer(auto_error=False)
 
 
