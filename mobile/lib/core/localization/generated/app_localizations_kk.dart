@@ -476,4 +476,44 @@ class AppLocalizationsKk extends AppLocalizations {
   @override
   String get offlineDraftHint =>
       'Фото, нүкте және сипаттама автоматты сақталады. Жариялау үшін интернет қажет.';
+
+  @override
+  String get citizenPlatform => 'Қазақстан тұрғындарының платформасы';
+
+  @override
+  String greeting(String name) {
+    return 'Сәлеметсіз бе, $name';
+  }
+
+  @override
+  String get mapExploreHint => 'Ауданыңызда не болып жатқанын көріңіз';
+
+  @override
+  String get prioritySectionHint => 'Басымдығы ең жоғары өтініштер';
+
+  @override
+  String get emptyFeedHint =>
+      'Қаладағы мәселені байқадыңыз ба? Фото қосып, картадан орнын белгілеңіз.';
+
+  @override
+  String get joinCity => 'Өзгерістерге\nүлес қосыңыз';
+
+  @override
+  String get welcomeBack => 'Қайта оралғаныңызға\nқуаныштымыз';
+
+  @override
+  String get authSubtitle =>
+      'Мәселелерді хабарлап, ауданыңыздағы өзгерістерді бақылаңыз.';
+
+  @override
+  String get showPassword => 'Құпиясөзді көрсету';
+
+  @override
+  String get hidePassword => 'Құпиясөзді жасыру';
+
+  @override
+  String get yourActivity => 'Сіздің үлесіңіз';
+
+  @override
+  String get notificationsTab => 'Хабарлар';
 }

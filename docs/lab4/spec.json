@@ -1,0 +1,924 @@
+{
+  "project": "QalaPulse",
+  "title": "Laboratory Work №4 — Wireframes Improvement and Interactive Elements",
+  "language": "ru",
+  "screens": [
+    {
+      "id": "01",
+      "title": "Главная",
+      "subtitle": "Город начинается с участия",
+      "nav": true,
+      "blocks": [
+        {
+          "type": "note",
+          "text": "Алматы · учебный сценарий"
+        },
+        {
+          "type": "button",
+          "text": "Сообщить о проблеме",
+          "action": "go:06"
+        },
+        {
+          "type": "button",
+          "text": "Проблемы на карте",
+          "action": "go:02",
+          "secondary": true
+        },
+        {
+          "type": "heading",
+          "text": "Высокий приоритет"
+        },
+        {
+          "type": "card",
+          "text": "Открытый люк у остановки",
+          "meta": "120 м · Приоритет 86 · 3 подтверждения",
+          "action": "go:03"
+        },
+        {
+          "type": "heading",
+          "text": "Последние обращения"
+        },
+        {
+          "type": "card",
+          "text": "Повреждён тротуар",
+          "meta": "350 м · Приоритет 54 · 2 подтверждения",
+          "action": "go:03"
+        },
+        {
+          "type": "note",
+          "text": "Публикация в QalaPulse не означает передачу обращения государственному органу."
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "title": "Карта",
+      "subtitle": "Проблемы поблизости",
+      "nav": true,
+      "back": "01",
+      "blocks": [
+        {
+          "type": "field",
+          "text": "Поиск по описанию",
+          "value": "",
+          "placeholder": "Например, люк",
+          "key": "search"
+        },
+        {
+          "type": "button",
+          "text": "Категории и фильтры",
+          "action": "modal:M2",
+          "secondary": true
+        },
+        {
+          "type": "map",
+          "text": "Схема района Алматы",
+          "height": 190,
+          "action": "go:03"
+        },
+        {
+          "type": "note",
+          "text": "Все категории · радиус 1 км",
+          "key": "filter-summary"
+        },
+        {
+          "type": "card",
+          "text": "Открытый люк у остановки",
+          "meta": "120 м · Открыть детали",
+          "action": "go:03"
+        },
+        {
+          "type": "button",
+          "text": "Моя геопозиция",
+          "action": "gps-map",
+          "secondary": true
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "title": "Обращение",
+      "subtitle": "Открытый люк у остановки",
+      "back": "02",
+      "nav": true,
+      "blocks": [
+        {
+          "type": "photo",
+          "text": "Фото проблемы",
+          "height": 110
+        },
+        {
+          "type": "badge",
+          "text": "Опубликовано в QalaPulse"
+        },
+        {
+          "type": "text",
+          "text": "Открытый люк рядом с тротуаром на ул. Абая. Опасен для пешеходов, особенно вечером."
+        },
+        {
+          "type": "note",
+          "text": "Опасность: 9/10 · Приоритет: 86\nРядом остановка. Подтверждения: 3",
+          "key": "confirm-count"
+        },
+        {
+          "type": "button",
+          "text": "Проблема всё ещё актуальна",
+          "action": "confirm-existing"
+        },
+        {
+          "type": "button",
+          "text": "Сообщить о решении",
+          "action": "modal:M4",
+          "secondary": true
+        },
+        {
+          "type": "text",
+          "text": "История: опубликовано → подтверждено жителями",
+          "small": true
+        },
+        {
+          "type": "field",
+          "text": "Комментарий",
+          "value": "",
+          "placeholder": "Добавьте наблюдение",
+          "key": "comment"
+        },
+        {
+          "type": "button",
+          "text": "Отправить комментарий",
+          "action": "comment",
+          "secondary": true
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "title": "Вход",
+      "subtitle": "Продолжите участие в жизни города",
+      "back": "01",
+      "nav": false,
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Войдите, чтобы создавать обращения и подтверждать проблемы."
+        },
+        {
+          "type": "field",
+          "text": "Электронная почта",
+          "value": "resident@example.com",
+          "key": "email",
+          "inputType": "email",
+          "required": true
+        },
+        {
+          "type": "field",
+          "text": "Пароль",
+          "value": "DemoPassword123",
+          "key": "password",
+          "inputType": "password",
+          "required": true
+        },
+        {
+          "type": "button",
+          "text": "Войти",
+          "action": "login"
+        },
+        {
+          "type": "button",
+          "text": "Создать аккаунт",
+          "action": "go:05",
+          "secondary": true
+        },
+        {
+          "type": "note",
+          "text": "Учебный вход: поля предзаполнены. Данные не отправляются на сервер."
+        }
+      ]
+    },
+    {
+      "id": "05",
+      "title": "Регистрация",
+      "subtitle": "Новый участник QalaPulse",
+      "back": "04",
+      "nav": false,
+      "blocks": [
+        {
+          "type": "field",
+          "text": "Имя",
+          "value": "Житель Алматы",
+          "key": "name",
+          "required": true
+        },
+        {
+          "type": "field",
+          "text": "Электронная почта",
+          "value": "resident@example.com",
+          "key": "email",
+          "inputType": "email",
+          "required": true
+        },
+        {
+          "type": "field",
+          "text": "Пароль · минимум 10 символов",
+          "value": "DemoPassword123",
+          "key": "password",
+          "inputType": "password",
+          "required": true
+        },
+        {
+          "type": "choice",
+          "text": "Язык интерфейса",
+          "choices": [
+            "Русский",
+            "Қазақша"
+          ],
+          "key": "language"
+        },
+        {
+          "type": "button",
+          "text": "Зарегистрироваться",
+          "action": "register"
+        },
+        {
+          "type": "button",
+          "text": "Уже есть аккаунт? Войти",
+          "action": "go:04",
+          "secondary": true
+        },
+        {
+          "type": "note",
+          "text": "Проверка обязательных полей. При ошибке введённый текст сохраняется."
+        }
+      ]
+    },
+    {
+      "id": "06",
+      "title": "Фотография",
+      "subtitle": "Создание обращения · шаг 1 из 7",
+      "back": "01",
+      "nav": false,
+      "blocks": [
+        {
+          "type": "progress",
+          "text": "1 / 7",
+          "value": 1
+        },
+        {
+          "type": "photo",
+          "text": "Добавьте фото городской проблемы",
+          "height": 230
+        },
+        {
+          "type": "button",
+          "text": "Добавить фотографию",
+          "action": "modal:M1"
+        },
+        {
+          "type": "button",
+          "text": "Продолжить",
+          "action": "",
+          "disabled": true
+        },
+        {
+          "type": "note",
+          "text": "Кнопка «Продолжить» недоступна, пока фото не выбрано. Не включайте личные данные в описание."
+        },
+        {
+          "type": "button",
+          "text": "Войти в аккаунт",
+          "action": "go:04",
+          "secondary": true
+        }
+      ]
+    },
+    {
+      "id": "07",
+      "title": "Фотография",
+      "subtitle": "Фото добавлено · шаг 1 из 7",
+      "back": "06",
+      "nav": false,
+      "blocks": [
+        {
+          "type": "progress",
+          "text": "1 / 7",
+          "value": 1
+        },
+        {
+          "type": "photo",
+          "text": "Выбрано фото: открытый люк",
+          "height": 230
+        },
+        {
+          "type": "button",
+          "text": "Заменить фотографию",
+          "action": "modal:M1",
+          "secondary": true
+        },
+        {
+          "type": "button",
+          "text": "Продолжить",
+          "action": "go:08"
+        },
+        {
+          "type": "note",
+          "text": "Черновик сохраняется автоматически. В макете используется условное фото, а не реальная съёмка."
+        }
+      ]
+    },
+    {
+      "id": "08",
+      "title": "Геолокация",
+      "subtitle": "Укажите место · шаг 2 из 7",
+      "back": "07",
+      "nav": false,
+      "blocks": [
+        {
+          "type": "progress",
+          "text": "2 / 7",
+          "value": 2
+        },
+        {
+          "type": "map",
+          "text": "Нажмите, чтобы уточнить точку",
+          "height": 180,
+          "action": "pick-location"
+        },
+        {
+          "type": "button",
+          "text": "Определить по GPS",
+          "action": "gps",
+          "secondary": true
+        },
+        {
+          "type": "field",
+          "text": "Адрес",
+          "value": "Алматы, улица Абая, остановка",
+          "key": "address"
+        },
+        {
+          "type": "field",
+          "text": "Координаты",
+          "value": "43.238900, 76.889700",
+          "key": "coordinates"
+        },
+        {
+          "type": "button",
+          "text": "Точка верна — продолжить",
+          "action": "go:09"
+        },
+        {
+          "type": "note",
+          "text": "Если GPS недоступен, выберите точку вручную. Положение в этом прототипе условное."
+        }
+      ]
+    },
+    {
+      "id": "09",
+      "title": "Описание",
+      "subtitle": "Текст или голос · шаг 3 из 7",
+      "back": "08",
+      "nav": false,
+      "blocks": [
+        {
+          "type": "progress",
+          "text": "3 / 7",
+          "value": 3
+        },
+        {
+          "type": "field",
+          "text": "Что произошло?",
+          "value": "Открытый люк у остановки на улице Абая.",
+          "key": "description",
+          "multiline": true,
+          "height": 115
+        },
+        {
+          "type": "voice",
+          "text": "Голосовое описание",
+          "height": 132
+        },
+        {
+          "type": "choice",
+          "text": "Язык записи",
+          "choices": [
+            "Русский",
+            "Қазақша"
+          ],
+          "key": "speechLanguage"
+        },
+        {
+          "type": "button",
+          "text": "Запустить AI-анализ",
+          "action": "go:10"
+        },
+        {
+          "type": "button",
+          "text": "Заполнить вручную",
+          "action": "go:11",
+          "secondary": true
+        },
+        {
+          "type": "note",
+          "text": "Транскрипт можно исправить. Голос и AI в прототипе демонстрационные."
+        }
+      ]
+    },
+    {
+      "id": "10",
+      "title": "AI-анализ",
+      "subtitle": "Обработка · шаг 4 из 7",
+      "back": "09",
+      "nav": false,
+      "blocks": [
+        {
+          "type": "progress",
+          "text": "4 / 7",
+          "value": 4
+        },
+        {
+          "type": "loading",
+          "text": "Анализируем фото и описание…",
+          "height": 140
+        },
+        {
+          "type": "text",
+          "text": "Определяем категорию и предлагаем описание. Результат обязательно проверяет человек."
+        },
+        {
+          "type": "button",
+          "text": "Анализ выполняется",
+          "action": "",
+          "disabled": true,
+          "loading": true
+        },
+        {
+          "type": "button",
+          "text": "Пропустить и заполнить вручную",
+          "action": "go:11",
+          "secondary": true
+        },
+        {
+          "type": "note",
+          "text": "Mock-режим: тестовый результат. В прототипе переход через 1,5 секунды."
+        },
+        {
+          "type": "button",
+          "text": "Показать ошибку сети",
+          "action": "modal:M5",
+          "secondary": true
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "title": "Проверка результата",
+      "subtitle": "Проверьте AI · шаг 5 из 7",
+      "back": "09",
+      "nav": false,
+      "blocks": [
+        {
+          "type": "progress",
+          "text": "5 / 7",
+          "value": 5
+        },
+        {
+          "type": "note",
+          "text": "Mock AI: демонстрационный результат. Уверенность модели не оценивается."
+        },
+        {
+          "type": "field",
+          "text": "Заголовок",
+          "value": "Открытый люк у остановки",
+          "key": "title"
+        },
+        {
+          "type": "choice",
+          "text": "Категория",
+          "choices": [
+            "Открытый люк",
+            "Дорога",
+            "Мусор",
+            "Освещение",
+            "Утечка воды",
+            "Тротуар",
+            "Другое"
+          ],
+          "key": "category"
+        },
+        {
+          "type": "field",
+          "text": "Описание",
+          "value": "Открытый люк рядом с тротуаром.",
+          "key": "description"
+        },
+        {
+          "type": "field",
+          "text": "Опасность · от 1 до 10",
+          "value": "9",
+          "key": "severity",
+          "inputType": "number"
+        },
+        {
+          "type": "checkbox",
+          "text": "Я проверил(а) и исправил(а) результат",
+          "key": "reviewed"
+        },
+        {
+          "type": "button",
+          "text": "Найти похожие обращения",
+          "action": "review-next",
+          "gate": "reviewed"
+        }
+      ]
+    },
+    {
+      "id": "12",
+      "title": "Похожие обращения",
+      "subtitle": "Проверка дубликатов · шаг 6 из 7",
+      "back": "11",
+      "nav": false,
+      "blocks": [
+        {
+          "type": "progress",
+          "text": "6 / 7",
+          "value": 6
+        },
+        {
+          "type": "text",
+          "text": "Возможно, соседи уже сообщили об этой проблеме."
+        },
+        {
+          "type": "card",
+          "text": "Открытый люк у остановки",
+          "meta": "В 35 м · та же категория · опубликовано сегодня",
+          "action": "go:03"
+        },
+        {
+          "type": "button",
+          "text": "Подтвердить существующую проблему",
+          "action": "confirm-duplicate"
+        },
+        {
+          "type": "note",
+          "text": "Похожесть — подсказка, не решение. Обращения никогда не объединяются автоматически."
+        },
+        {
+          "type": "button",
+          "text": "Всё равно создать новое",
+          "action": "modal:M3",
+          "secondary": true
+        },
+        {
+          "type": "button",
+          "text": "Показать ошибку сети",
+          "action": "modal:M5",
+          "secondary": true
+        }
+      ]
+    },
+    {
+      "id": "13",
+      "title": "Опубликовано",
+      "subtitle": "Обращение появилось в QalaPulse",
+      "nav": false,
+      "blocks": [
+        {
+          "type": "success",
+          "text": "Обращение опубликовано",
+          "height": 140
+        },
+        {
+          "type": "badge",
+          "text": "Статус: published"
+        },
+        {
+          "type": "text",
+          "text": "Теперь жители могут увидеть проблему на карте и подтвердить её."
+        },
+        {
+          "type": "note",
+          "text": "Это публикация на гражданской платформе. Передача в государственный орган не выполнялась."
+        },
+        {
+          "type": "button",
+          "text": "Открыть обращение",
+          "action": "go:03"
+        },
+        {
+          "type": "button",
+          "text": "Посмотреть на карте",
+          "action": "go:02",
+          "secondary": true
+        },
+        {
+          "type": "button",
+          "text": "На главную",
+          "action": "go:01",
+          "secondary": true
+        }
+      ]
+    },
+    {
+      "id": "14",
+      "title": "События",
+      "subtitle": "Обновления ваших обращений",
+      "nav": true,
+      "back": "01",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "Внутренняя лента событий. Push-уведомления пока не подключены."
+        },
+        {
+          "type": "card",
+          "text": "Проблему подтвердил житель",
+          "meta": "Открытый люк · только что",
+          "status": "Подтверждение принято",
+          "action": "go:03"
+        },
+        {
+          "type": "card",
+          "text": "Обращение отмечено как решённое",
+          "meta": "Проверьте результат на месте",
+          "status": "Ожидает подтверждения",
+          "action": "modal:M4"
+        },
+        {
+          "type": "text",
+          "text": "Потяните список вниз, чтобы обновить события.",
+          "small": true
+        },
+        {
+          "type": "button",
+          "text": "Обновить события",
+          "action": "refresh-events",
+          "secondary": true
+        }
+      ]
+    },
+    {
+      "id": "15",
+      "title": "Профиль",
+      "subtitle": "Ваше участие",
+      "nav": true,
+      "back": "01",
+      "blocks": [
+        {
+          "type": "note",
+          "text": "Житель Алматы\nresident@example.com"
+        },
+        {
+          "type": "button",
+          "text": "Мои обращения",
+          "action": "my-incidents",
+          "secondary": true
+        },
+        {
+          "type": "button",
+          "text": "Мои подтверждения",
+          "action": "go:14",
+          "secondary": true
+        },
+        {
+          "type": "button",
+          "text": "Открыть сохранённый черновик",
+          "action": "go:07",
+          "secondary": true
+        },
+        {
+          "type": "choice",
+          "text": "Язык интерфейса",
+          "choices": [
+            "Русский",
+            "Қазақша"
+          ],
+          "key": "language"
+        },
+        {
+          "type": "button",
+          "text": "Войти / сменить аккаунт",
+          "action": "go:04",
+          "secondary": true
+        },
+        {
+          "type": "note",
+          "text": "Фото и геолокация используются для описания городской проблемы. Не добавляйте личные данные в текст."
+        },
+        {
+          "type": "button",
+          "text": "Выйти",
+          "action": "logout",
+          "secondary": true
+        }
+      ]
+    }
+  ],
+  "modals": [
+    {
+      "id": "M1",
+      "title": "Добавить фотографию",
+      "text": "Выберите источник. В учебном прототипе будет добавлено условное фото.",
+      "buttons": [
+        {
+          "type": "button",
+          "text": "Сделать фото",
+          "action": "photo-camera"
+        },
+        {
+          "type": "button",
+          "text": "Выбрать из галереи",
+          "action": "photo-gallery",
+          "secondary": true
+        },
+        {
+          "type": "button",
+          "text": "Отмена",
+          "action": "close",
+          "secondary": true
+        }
+      ]
+    },
+    {
+      "id": "M2",
+      "title": "Фильтры карты",
+      "text": "Выберите категорию и радиус поиска.",
+      "blocks": [
+        {
+          "type": "choice",
+          "text": "Категория",
+          "choices": [
+            "Все категории",
+            "Открытый люк",
+            "Мусор"
+          ],
+          "key": "mapCategory"
+        },
+        {
+          "type": "choice",
+          "text": "Радиус",
+          "choices": [
+            "500 м",
+            "1 км",
+            "3 км"
+          ],
+          "key": "radius"
+        }
+      ],
+      "buttons": [
+        {
+          "type": "button",
+          "text": "Применить",
+          "action": "apply-filters"
+        },
+        {
+          "type": "button",
+          "text": "Сбросить",
+          "action": "reset-filters",
+          "secondary": true
+        },
+        {
+          "type": "button",
+          "text": "Отмена",
+          "action": "close",
+          "secondary": true
+        }
+      ]
+    },
+    {
+      "id": "M3",
+      "title": "Опубликовать обращение?",
+      "text": "Шаг 7 из 7. Проверьте фото, место и описание. После публикации обращение станет доступно жителям.",
+      "buttons": [
+        {
+          "type": "button",
+          "text": "Подтвердить публикацию",
+          "action": "publish"
+        },
+        {
+          "type": "button",
+          "text": "Вернуться к проверке",
+          "action": "go:11",
+          "secondary": true
+        },
+        {
+          "type": "button",
+          "text": "Отмена",
+          "action": "close",
+          "secondary": true
+        }
+      ]
+    },
+    {
+      "id": "M4",
+      "title": "Проблема решена?",
+      "text": "Оцените результат на месте. Ваш ответ появится в истории обращения.",
+      "buttons": [
+        {
+          "type": "button",
+          "text": "Да, полностью решена",
+          "action": "resolved"
+        },
+        {
+          "type": "button",
+          "text": "Решена частично",
+          "action": "partial",
+          "secondary": true
+        },
+        {
+          "type": "button",
+          "text": "Проблема всё ещё есть",
+          "action": "unresolved",
+          "secondary": true
+        },
+        {
+          "type": "button",
+          "text": "Отмена",
+          "action": "close",
+          "secondary": true
+        }
+      ]
+    },
+    {
+      "id": "M5",
+      "title": "Нет соединения",
+      "text": "Черновик сохранён. Фото, координаты и описание останутся на устройстве. Повторная отправка не создаёт копию обращения.",
+      "buttons": [
+        {
+          "type": "button",
+          "text": "Повторить отправку",
+          "action": "retry"
+        },
+        {
+          "type": "button",
+          "text": "Продолжить позже",
+          "action": "go:15",
+          "secondary": true
+        },
+        {
+          "type": "button",
+          "text": "Вернуться к черновику",
+          "action": "close",
+          "secondary": true
+        }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "title": "A · Создание обращения",
+      "steps": [
+        "01 Главная",
+        "06 Фото пусто",
+        "M1 Источник фото",
+        "07 Фото добавлено",
+        "08 Геолокация",
+        "09 Текст / голос",
+        "10 AI загрузка",
+        "11 Проверка AI",
+        "12 Дубликаты",
+        "M3 Публикация",
+        "13 Успех",
+        "03 Детали"
+      ]
+    },
+    {
+      "title": "B · Подтверждение существующей проблемы",
+      "steps": [
+        "01 Главная",
+        "02 Карта",
+        "M2 Фильтры",
+        "03 Детали",
+        "Подтвердить актуальность",
+        "14 События"
+      ]
+    },
+    {
+      "title": "C · Решение и обратная связь",
+      "steps": [
+        "14 События",
+        "M4 Оценка решения",
+        "Да / Частично / Всё ещё есть",
+        "03 Детали и история"
+      ]
+    },
+    {
+      "title": "D · Ошибка сети и восстановление",
+      "steps": [
+        "12 Дубликаты",
+        "M5 Нет сети",
+        "15 Профиль / черновик",
+        "07 Фото восстановлено",
+        "Повторить → 13 Успех"
+      ]
+    },
+    {
+      "title": "E · Авторизация",
+      "steps": [
+        "15 Профиль",
+        "04 Вход",
+        "05 Регистрация",
+        "06 Создание обращения"
+      ]
+    }
+  ]
+}

@@ -478,4 +478,44 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get offlineDraftHint =>
       'Фото, точка и описание сохраняются автоматически. Для публикации нужен интернет.';
+
+  @override
+  String get citizenPlatform => 'Платформа жителей Казахстана';
+
+  @override
+  String greeting(String name) {
+    return 'Здравствуйте, $name';
+  }
+
+  @override
+  String get mapExploreHint => 'Посмотрите, что происходит в вашем районе';
+
+  @override
+  String get prioritySectionHint => 'Обращения с наибольшим приоритетом';
+
+  @override
+  String get emptyFeedHint =>
+      'Заметили городскую проблему? Добавьте фото и отметьте место на карте.';
+
+  @override
+  String get joinCity => 'Станьте частью\nперемен';
+
+  @override
+  String get welcomeBack => 'Рады видеть\nвас снова';
+
+  @override
+  String get authSubtitle =>
+      'Сообщайте о проблемах и следите за тем, как меняется ваш район.';
+
+  @override
+  String get showPassword => 'Показать пароль';
+
+  @override
+  String get hidePassword => 'Скрыть пароль';
+
+  @override
+  String get yourActivity => 'Ваше участие';
+
+  @override
+  String get notificationsTab => 'События';
 }

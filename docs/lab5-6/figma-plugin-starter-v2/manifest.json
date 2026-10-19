@@ -1,0 +1,25 @@
+{
+  "name": "QalaPulse Lab 5-6 — STARTER FIX v2",
+  "id": "qalapulse-lab5-6-starter-v2",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": [
+    "figma"
+  ],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": [
+      "none"
+    ]
+  },
+  "menu": [
+    {
+      "name": "Create UI & interactive prototype",
+      "command": "build"
+    },
+    {
+      "name": "Check existing prototype",
+      "command": "verify"
+    }
+  ]
+}

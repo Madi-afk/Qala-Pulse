@@ -1,0 +1,13 @@
+{
+  "name": "QalaPulse — Laboratory Work 4",
+  "id": "qalapulse-lab4-local",
+  "api": "1.0.0",
+  "main": "code.js",
+  "menu": [
+    {"name": "Создать макеты", "command": "build"},
+    {"name": "Связать существующие экраны", "command": "connect"}
+  ],
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {"allowedDomains": ["none"]}
+}

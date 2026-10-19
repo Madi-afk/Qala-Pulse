@@ -1,0 +1,57 @@
+const page=figma.currentPage;
+const tokens={},styles={},components={},links=[];
+const primitive=figma.variables.createVariableCollection('QalaPulse UI / Primitives');
+const semantic=figma.variables.createVariableCollection('QalaPulse UI / Semantic');
+// Semantic alias construction follows createSemanticTokens.js from figma-generate-library.
+const palette={primary:'#24634C',secondary:'#E5EDE4',background:'#F6F5F0',text:'#202D29',accent:'#A34D19',muted:'#5E6B64',line:'#DFE3DB',surface:'#FFFFFF',warningBg:'#F8EBDD',error:'#B3261E',errorBg:'#FCEAE8',disabled:'#DFE3DB',pressed:'#194733'};
+for(const [name,hex]of Object.entries(palette)){
+  const color={r:parseInt(hex.slice(1,3),16)/255,g:parseInt(hex.slice(3,5),16)/255,b:parseInt(hex.slice(5,7),16)/255};
+  const p=figma.variables.createVariable('color/'+name,primitive,'COLOR');p.scopes=[];p.setValueForMode(primitive.defaultModeId,color);p.setVariableCodeSyntax('WEB','var(--qp-raw-'+name+')');
+  const v=figma.variables.createVariable(name,semantic,'COLOR');v.scopes=['FRAME_FILL','SHAPE_FILL','TEXT_FILL','STROKE_COLOR'];v.setValueForMode(semantic.defaultModeId,{type:'VARIABLE_ALIAS',id:p.id});v.setVariableCodeSyntax('WEB','var(--qp-'+name+')');tokens[name]=v;
+}
+for(const [prefix,values,scope] of [['space',[0,4,8,12,16,20,24,32],'GAP'],['radius',[8,12,14,24],'CORNER_RADIUS']])for(const value of values){const v=figma.variables.createVariable(prefix+'/'+value,semantic,'FLOAT');v.scopes=[scope];v.setValueForMode(semantic.defaultModeId,value);v.setVariableCodeSyntax('WEB','var(--qp-'+prefix+'-'+value+')');tokens[prefix+'/'+value]=v;}
+await Promise.all(['Regular','SemiBold','Bold'].map(style=>figma.loadFontAsync({family:'Noto Sans',style})));
+for(const [name,size,line,weight]of [['Display',32,38,'Bold'],['Heading',28,34,'Bold'],['Subheading',20,26,'Bold'],['Body',14,21,'Regular'],['Button',15,22,'SemiBold'],['Caption',12,18,'Regular']]){const s=figma.createTextStyle();s.name='QalaPulse UI/'+name;s.fontName={family:'Noto Sans',style:weight};s.fontSize=size;s.lineHeight={unit:'PIXELS',value:line};styles[name]=s;}
+// COMMON
+const masters=frame(page,'Component masters',2750,10,'VERTICAL',null,24);masters.x=6500;masters.y=80;
+for(const name of Object.keys(PATHS)){const c=figma.createComponent();c.name='QalaPulse/Icon/'+name;c.resize(24,24);c.fills=[];masters.appendChild(c);icon(c,name);components['Icon/'+name]=c;c.description='24px outline icon; use with a text label or accessible name.';}
+const variants=[];
+for(const kind of ['Primary','Secondary'])for(const state of ['Default','Pressed','Disabled','Loading']){
+  const c=figma.createComponent();c.name='Style='+kind+', State='+state;c.resize(350,52);c.layoutMode='HORIZONTAL';c.primaryAxisAlignItems='CENTER';c.counterAxisAlignItems='CENTER';rounded(c,'radius/14');c.fills=[paint(state==='Disabled'?'disabled':kind==='Secondary'?'surface':state==='Pressed'?'pressed':'primary')];c.strokes=kind==='Secondary'?[paint('line')]:[];
+  const t=await txt(c,state==='Loading'?'Please wait…':'Continue','Button',state==='Disabled'?'muted':kind==='Primary'?'surface':'primary',318);t.textAlignHorizontal='CENTER';variants.push(c);components['Button/'+kind+'/'+state]=c;
+}
+// Variant grid follows createComponentWithVariants.js. Native product shapes replace generic kit defaults.
+const bs=figma.combineAsVariants(variants,page);bs.name='QalaPulse/Button';masters.appendChild(bs);bs.resize(1520,170);variants.forEach((c,i)=>{c.x=16+(i%4)*374;c.y=16+Math.floor(i/4)*78;});bs.description='52px target, radius 14. Primary for the next step; secondary for alternatives. Disabled and loading states have no navigation.';
+const labelProperty=bs.addComponentProperty('Label','TEXT','Continue');variants.forEach(c=>{c.findAllWithCriteria({types:['TEXT']})[0].componentPropertyReferences={characters:labelProperty};});
+const inputs=[];
+for(const state of ['Default','Focus','Error']){const c=figma.createComponent();c.name='State='+state;c.resize(350,80);c.layoutMode='VERTICAL';c.primaryAxisSizingMode='FIXED';c.counterAxisSizingMode='FIXED';c.paddingTop=12;c.paddingBottom=12;c.paddingLeft=16;c.paddingRight=16;c.itemSpacing=4;c.fills=[paint('surface')];c.strokes=[paint(state==='Focus'?'primary':state==='Error'?'error':'line')];c.strokeWeight=state==='Default'?1:2;rounded(c,'radius/12');await txt(c,'Field label','Caption','muted',318);await txt(c,'Your text here','Body','text',318);inputs.push(c);components['Input/'+state]=c;}
+const ins=figma.combineAsVariants(inputs,page);ins.name='QalaPulse/Input';masters.appendChild(ins);ins.resize(1140,112);inputs.forEach((c,i)=>{c.x=16+i*374;c.y=16;});ins.description='Persistent label, 80px field, radius 12. Error needs explanatory helper text. Prototype fields use preset values.';
+for(const [name,index,value]of [['Label',0,'Field label'],['Value',1,'Your text here']]){const key=ins.addComponentProperty(name,'TEXT',value);inputs.forEach(c=>{c.children[index].componentPropertyReferences={characters:key};});}
+const search=figma.createComponent();search.name='QalaPulse/Search';search.resize(350,52);search.layoutMode='HORIZONTAL';search.counterAxisAlignItems='CENTER';search.paddingLeft=16;search.paddingRight=16;search.itemSpacing=12;search.fills=[paint('surface')];search.strokes=[paint('line')];rounded(search,'radius/12');icon(search,'search','muted');await txt(search,'Search nearby issues','Body','muted',280);masters.appendChild(search);components.Search=search;search.description='Search entry point; opens a preset search state in this prototype.';
+const c=figma.createComponent();c.name='QalaPulse/IncidentCard';c.resize(350,174);c.layoutMode='VERTICAL';c.primaryAxisSizingMode='AUTO';c.counterAxisSizingMode='FIXED';c.paddingTop=16;c.paddingBottom=16;c.paddingLeft=16;c.paddingRight=16;c.itemSpacing=8;c.fills=[paint('surface')];c.strokes=[paint('line')];rounded(c);await badge(c,'Published in QalaPulse','primary','secondary',178);(await txt(c,'Pothole near the bus stop','Button','text',318)).name='Card title';(await txt(c,'Abay Avenue · 120 m away','Caption','muted',318)).name='Card meta';await txt(c,'High priority  ·  3 confirmations','Caption','accent',318);masters.appendChild(c);components.IncidentCard=c;c.description='Issue card: status, title, location, priority and community confirmation. Values are illustrative demo data.';
+for(const active of ['home','map','create','events','profile']){
+  const n=figma.createComponent();n.name='QalaPulse/Navigation/'+active;n.resize(390,84);n.layoutMode='HORIZONTAL';n.paddingLeft=10;n.paddingRight=10;n.paddingTop=8;n.paddingBottom=12;n.itemSpacing=0;n.fills=[paint('background')];
+  for(const [id,label,symbol]of [['home','Home','home'],['map','Map','map'],['create','Create','plus'],['events','Updates','bell'],['profile','Profile','user']]){const t=frame(n,'Tab/'+id,74,64,'VERTICAL',null,4,0,true);t.counterAxisAlignItems='CENTER';const pill=rounded(frame(t,'Selection',56,32,'HORIZONTAL',id===active?'secondary':null,0,4,true),'radius/24');pill.primaryAxisAlignItems='CENTER';icon(pill,symbol,id===active?'primary':'muted');const l=await txt(t,label,'Caption',id===active?'primary':'muted',74);l.textAlignHorizontal='CENTER';}
+  masters.appendChild(n);components['Navigation/'+active]=n;n.description='Five top-level destinations. Selected tab is not a self-navigation target.';
+}
+const header=frame(page,'00 · Design system / foundations',2750,560,'VERTICAL','surface',24,32,true);header.x=80;header.y=80;
+await txt(header,'QalaPulse / A city shaped by its people','Display','text',2650);await txt(header,'LAB 05 — UI DESIGN & DESIGN SYSTEM     /     LAB 06 — INTERACTIVE PROTOTYPE','Button','primary',2650);
+const swatches=frame(header,'Color palette',2650,128,'HORIZONTAL',null,16,0,true);
+for(const [name,label]of [['primary','Primary'],['secondary','Secondary'],['background','Background'],['text','Text'],['accent','Accent']]){const sw=frame(swatches,label,250,10,'VERTICAL',null,8);rounded(rect(sw,label,250,64,name),'radius/12');await txt(sw,label+'  '+palette[name],'Button','text',250);}
+await txt(header,'Noto Sans · one family · Regular / SemiBold / Bold','Subheading','text',2600);
+await txt(header,'Heading 28/34    Subheading 20/26    Body 14/21    Button 15/22    Caption 12/18','Body','muted',2600);
+await txt(header,'8px spacing rhythm · 20px screen gutters · 52px buttons · 14px cards · 12px inputs · 24px icons · 390 × 844 mobile frames','Body','muted',2600);
+const showcase=frame(page,'01 · UI component library / instances',2750,1000,'VERTICAL','surface',24,32,true);showcase.x=80;showcase.y=700;
+await txt(showcase,'Reusable components, consistent decisions.','Heading','text',2620);
+const row=frame(showcase,'Buttons and fields',2640,10,'HORIZONTAL',null,24);
+const col=frame(row,'Button states',350,10,'VERTICAL',null,12);await txt(col,'Buttons / 52px','Subheading');await button(col,'Report an issue');await button(col,'Save draft',null,'Secondary');await button(col,'Pressed',null,'Primary','Pressed');await button(col,'Continue',null,'Primary','Disabled');await button(col,'Please wait',null,'Primary','Loading');
+const col2=frame(row,'Input states',350,10,'VERTICAL',null,12);await txt(col2,'Inputs / 80px','Subheading');await field(col2,'Title','Pothole near the bus stop');await field(col2,'Email','madi@example.com',null,'Focus');await field(col2,'Email','madi',null,'Error');await txt(col2,'Enter a valid email address.','Caption','error');
+const col3=frame(row,'Cards and search',350,10,'VERTICAL',null,12);await txt(col3,'Cards & search','Subheading');col3.appendChild(search.createInstance());await card(col3,null);
+const col4=frame(row,'Navigation and icons',450,10,'VERTICAL',null,16);await txt(col4,'Navigation & icons','Subheading','text',450);col4.appendChild(components['Navigation/home'].createInstance());const ir=frame(col4,'Icon family',420,24,'HORIZONTAL',null,16,0,true);for(const name of ['camera','pin','mic','shield','edit','warning','check'])icon(ir,name);
+await txt(col4,'Icons carry meaning alongside labels.\nStatus uses text and color, never color alone.','Body','muted',420);
+const typography=frame(showcase,'Typography styles',2630,10,'HORIZONTAL',null,32);
+for(const [style,sample] of [['Heading','Your city.\nYour voice.'],['Subheading','Issues near you'],['Body','A photo, a location and a clear description help neighbours understand the issue.'],['Button','Report an issue'],['Caption','Published in QalaPulse']]){const box=frame(typography,style,350,10,'VERTICAL',null,12);await txt(box,style,'Caption','muted');await txt(box,sample,style);}
+await txt(showcase,'Component use: primary buttons move the task forward; secondary buttons offer alternatives. All fields keep their labels. Modals ask for a decision and always include Cancel.','Body','muted',2520);
+await txt(showcase,'Prototype scope: English classroom design based on the RU/KK Flutter app. Camera, location, AI and network actions are simulated. All locations and counts are demonstration data.','Caption','muted',2520);
+const result={pageId:page.id,collections:{primitive:primitive.id,semantic:semantic.id},styles:Object.fromEntries(Object.entries(styles).map(([k,v])=>[k,v.id])),components:Object.fromEntries(Object.entries(components).map(([k,v])=>[k,v.id])),tokens:Object.fromEntries(Object.entries(tokens).map(([k,v])=>[k,v.id])),createdNodeIds:[page.id,...page.findAll(()=>true).map(n=>n.id)],reviewFrames:[header.id,showcase.id]};
+return result;

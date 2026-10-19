@@ -23,3 +23,22 @@ mobile/android/key.properties
 *.pfx
 artifacts/
 .playwright-mcp/
+
+# Local tooling, unrelated workspace project and temporary render files
+/.agents/
+/skills-lock.json
+/damdycake/
+/tmp/
+
+# Local Figma account state and reproducible distribution archives
+/docs/lab4/figma-state.json
+/docs/lab4/*.log
+/docs/lab4/*.zip
+/docs/lab5-6/work-state.json
+/docs/lab5-6/*.zip
+
+# Keep only QalaPulse presentation deliverables under output
+/output/*
+!/output/pdf/
+/output/pdf/*
+!/output/pdf/qalapulse/

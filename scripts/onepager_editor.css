@@ -1,0 +1,13 @@
+.toolbar{max-width:none;margin:0;padding:12px 20px;background:#fff;border-bottom:1px solid #dbe3ef;position:sticky;top:0;z-index:20;flex-wrap:wrap}
+.toolbar button{font-size:13px}.toolbar button.secondary{background:#edf2f9;color:#09152b}.toolbar button:disabled{opacity:.45;cursor:default}
+.editor-layout{display:flex;justify-content:center;gap:24px;padding:24px;align-items:flex-start}main{flex-shrink:0;margin:0}
+.editor-panel{width:300px;flex-shrink:0;background:#fff;border:1px solid #dbe3ef;border-radius:12px;padding:20px;position:sticky;top:88px;font-size:14px}
+.editor-panel h2{margin:0 0 12px;font-size:20px}.editor-panel p{line-height:1.5}.editor-panel label{display:block;margin:12px 0 0;font-size:12px;font-weight:700}
+.editor-panel input,.editor-panel textarea,.editor-panel select{display:block;width:100%;margin-top:6px;padding:9px;border:1px solid #acb9cb;border-radius:6px;font:14px Arial;background:white;color:#09152b}
+.editor-panel textarea{min-height:112px;resize:vertical}.editor-panel input[type=color]{height:38px;padding:3px}
+.editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.editor-hint{font-size:12px;color:#536176}.editor-warning{color:#923719;font-size:12px;line-height:1.5;min-height:18px}
+main svg text{cursor:pointer}main svg text:hover{filter:drop-shadow(0 0 2px #2878ff70)}main svg text[data-selected]{outline:1px dashed #2878ff;outline-offset:3px}
+.save-status{font-size:12px;color:#536176}.editor-panel fieldset{padding:0;border:0;margin:0}.editor-panel fieldset:disabled{opacity:.45}
+@media screen and (max-width:1200px){.editor-layout{justify-content:flex-start;overflow:auto}.editor-panel{position:sticky;right:0;box-shadow:0 4px 22px #09152b20}}
+@media screen and (max-width:800px){.editor-layout{display:flex;flex-direction:column;padding:12px;overflow:visible}main{width:100%;height:auto}.editor-panel{position:static;width:100%}.toolbar{position:static}.editor-panel textarea{min-height:70px}}
+@media print{.toolbar,.editor-panel{display:none!important}.editor-layout{display:block;padding:0}main{width:210mm;height:297mm;margin:0;box-shadow:none}main svg text{outline:none!important;filter:none!important}}

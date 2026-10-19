@@ -11,7 +11,13 @@
   "searchHere": "Осы жерден іздеу",
   "refreshMap": "Картаны жаңарту",
   "mapSearchArea": "Іздеу нүктесінен {radius} м радиустағы өтініштер. Картаны жылжытып, «Осы жерден іздеу» түймесін басыңыз.",
-  "@mapSearchArea": {"placeholders": {"radius": {"type": "int"}}},
+  "@mapSearchArea": {
+    "placeholders": {
+      "radius": {
+        "type": "int"
+      }
+    }
+  },
   "mapResultsLimited": "Алғашқы 200 өтініш көрсетілді. Картаны жақындатыңыз немесе санатты нақтылаңыз.",
   "@@locale": "kk",
   "appName": "QalaPulse",
@@ -147,5 +153,24 @@
   "permissionSettings": "Рұқсат баптауларын ашу",
   "dateFormat": "dd.MM.yyyy HH:mm",
   "requiredField": "Міндетті өріс",
-  "offlineDraftHint": "Фото, нүкте және сипаттама автоматты сақталады. Жариялау үшін интернет қажет."
+  "offlineDraftHint": "Фото, нүкте және сипаттама автоматты сақталады. Жариялау үшін интернет қажет.",
+  "citizenPlatform": "Қазақстан тұрғындарының платформасы",
+  "greeting": "Сәлеметсіз бе, {name}",
+  "mapExploreHint": "Ауданыңызда не болып жатқанын көріңіз",
+  "prioritySectionHint": "Басымдығы ең жоғары өтініштер",
+  "emptyFeedHint": "Қаладағы мәселені байқадыңыз ба? Фото қосып, картадан орнын белгілеңіз.",
+  "joinCity": "Өзгерістерге\nүлес қосыңыз",
+  "welcomeBack": "Қайта оралғаныңызға\nқуаныштымыз",
+  "authSubtitle": "Мәселелерді хабарлап, ауданыңыздағы өзгерістерді бақылаңыз.",
+  "showPassword": "Құпиясөзді көрсету",
+  "hidePassword": "Құпиясөзді жасыру",
+  "yourActivity": "Сіздің үлесіңіз",
+  "@greeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsTab": "Хабарлар"
 }

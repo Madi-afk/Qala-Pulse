@@ -9,6 +9,7 @@ import '../../core/config/environment.dart';
 import '../../core/errors/app_error.dart';
 import '../../core/localization/strings.dart';
 import '../../shared/widgets/async_panel.dart';
+import '../../shared/widgets/status_badge.dart';
 import '../auth/auth_controller.dart';
 import '../feed/incident_repository.dart';
 import '../map/city_map.dart';
@@ -144,7 +145,7 @@ class _DetailsScreenState extends ConsumerState<DetailsScreen> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              Chip(label: Text(context.statusLabel(item.status))),
+              StatusBadge(item.status),
               Chip(label: Text('${context.l.severity}: ${item.severity}/10')),
             ],
           ),

@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/errors/app_error.dart';
 import '../../core/localization/strings.dart';
 import '../../shared/widgets/async_panel.dart';
+import '../../shared/widgets/brand_mark.dart';
+import '../../core/theme/app_theme.dart';
 import 'auth_controller.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
@@ -39,18 +41,23 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           child: ListView(
             padding: const EdgeInsets.all(24),
             children: [
-              const Icon(
-                Icons.location_city_rounded,
-                size: 64,
-                color: Color(0xFF087E70),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: BrandMark(size: 52),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 28),
               Text(
-                context.l.appName,
-                textAlign: TextAlign.center,
+                registering ? context.l.joinCity : context.l.welcomeBack,
                 style: Theme.of(context).textTheme.headlineLarge,
               ),
-              Notice(context.l.honestNotice),
+              const SizedBox(height: 12),
+              Text(
+                context.l.authSubtitle,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: AppPalette.muted),
+              ),
+              const SizedBox(height: 32),
               Form(
                 key: form,
                 child: Column(
@@ -93,6 +100,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         labelText: context.l.password,
                         helperText: registering ? context.l.passwordHint : null,
                         suffixIcon: IconButton(
+                          tooltip: obscured
+                              ? context.l.showPassword
+                              : context.l.hidePassword,
                           onPressed: () => setState(() => obscured = !obscured),
                           icon: Icon(
                             obscured
@@ -110,7 +120,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     if (auth.hasError)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 16),
-                        child: Text(errorMessage(auth.error!, context.l)),
+                        child: Semantics(
+                          liveRegion: true,
+                          child: Notice(
+                            errorMessage(auth.error!, context.l),
+                            icon: Icons.error_outline,
+                          ),
+                        ),
                       ),
                     SizedBox(
                       width: double.infinity,
@@ -163,6 +179,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   ],
                 ),
               ),
+              const SizedBox(height: 20),
+              Notice(context.l.honestNotice),
             ],
           ),
         ),

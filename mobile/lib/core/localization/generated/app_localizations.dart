@@ -979,6 +979,78 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Фото, точка и описание сохраняются автоматически. Для публикации нужен интернет.'**
   String get offlineDraftHint;
+
+  /// No description provided for @citizenPlatform.
+  ///
+  /// In ru, this message translates to:
+  /// **'Платформа жителей Казахстана'**
+  String get citizenPlatform;
+
+  /// No description provided for @greeting.
+  ///
+  /// In ru, this message translates to:
+  /// **'Здравствуйте, {name}'**
+  String greeting(String name);
+
+  /// No description provided for @mapExploreHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Посмотрите, что происходит в вашем районе'**
+  String get mapExploreHint;
+
+  /// No description provided for @prioritySectionHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Обращения с наибольшим приоритетом'**
+  String get prioritySectionHint;
+
+  /// No description provided for @emptyFeedHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Заметили городскую проблему? Добавьте фото и отметьте место на карте.'**
+  String get emptyFeedHint;
+
+  /// No description provided for @joinCity.
+  ///
+  /// In ru, this message translates to:
+  /// **'Станьте частью\nперемен'**
+  String get joinCity;
+
+  /// No description provided for @welcomeBack.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рады видеть\nвас снова'**
+  String get welcomeBack;
+
+  /// No description provided for @authSubtitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сообщайте о проблемах и следите за тем, как меняется ваш район.'**
+  String get authSubtitle;
+
+  /// No description provided for @showPassword.
+  ///
+  /// In ru, this message translates to:
+  /// **'Показать пароль'**
+  String get showPassword;
+
+  /// No description provided for @hidePassword.
+  ///
+  /// In ru, this message translates to:
+  /// **'Скрыть пароль'**
+  String get hidePassword;
+
+  /// No description provided for @yourActivity.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ваше участие'**
+  String get yourActivity;
+
+  /// No description provided for @notificationsTab.
+  ///
+  /// In ru, this message translates to:
+  /// **'События'**
+  String get notificationsTab;
 }
 
 class _AppLocalizationsDelegate

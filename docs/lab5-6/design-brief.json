@@ -1,0 +1,31 @@
+{
+  "project": "QalaPulse",
+  "language": "en",
+  "source": "mobile/lib/core/theme/app_theme.dart; docs/lab4/spec.json",
+  "figmaFileKey": "d7aQG04h2LnjJqXm6lqEnx",
+  "page": "Current page; new frames to the right of existing content",
+  "scope": "Color and typography foundations, reusable components, complete report flow, overlays, prototype verification and demonstration script",
+  "palette": {
+    "primary": "#24634C",
+    "secondary": "#E5EDE4",
+    "background": "#F6F5F0",
+    "text": "#202D29",
+    "accent": "#A34D19",
+    "muted": "#5E6B64",
+    "line": "#DFE3DB",
+    "surface": "#FFFFFF"
+  },
+  "font": "Noto Sans",
+  "discovery": {
+    "codeConnect": "No matching Code Connect files in repository",
+    "existingFile": "Lab 4 has grayscale components; retained unchanged",
+    "libraries": "Material 3 inspected; product-specific local components required to preserve Noto Sans, 14px cards and existing green palette",
+    "originalUserFile": "Edit access confirmed on 2026-10-13; first mutation blocked by Starter MCP limit"
+  },
+  "limitations": [
+    "English is the submission language, not a claim that the Flutter app has English localization",
+    "Prototype uses seeded data and simulated camera, AI, GPS and network actions",
+    "No government integration",
+    "Human participant testing must not be claimed without participants"
+  ]
+}

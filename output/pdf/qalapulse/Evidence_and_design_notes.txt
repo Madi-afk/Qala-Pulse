@@ -1,0 +1,50 @@
+QALAPULSE INVESTOR ONE PAGER
+Prepared 12 October 2026
+
+DELIVERABLES
+QalaPulse_Investor_OnePager.pdf: one A4 portrait page, native vector artwork and selectable text.
+QalaPulse_OnePager.html: self-contained editable SVG-in-HTML source with embedded Inter fonts.
+QalaPulse_Preview.png: PDF rendered at 300 dpi, suitable for high-resolution previews.
+
+FACT CHECK
+1. Flutter MVP, RU/KK localization, authentication, drafts, duplicate candidates:
+   README.md; mobile/lib/features; mobile/lib/core/localization/arb.
+2. Map, category filtering and incident card navigation:
+   mobile/lib/features/map/map_screen.dart; city_map.dart.
+3. Docker/PostGIS infrastructure:
+   docker-compose.yml; backend/app; docs/android-pilot-fixes.md.
+4. 38 passed Flutter tests:
+   docs/ui-redesign.md, section "Проверки". This is a reported prior technical
+   result, not a newly executed test run or evidence of real pilot success.
+5. AI and privacy limitations:
+   README.md, sections "AI: mock и cloud" and "Ограничения MVP".
+   Mock vision classifies text, not photos. Real cloud model quality is unvalidated.
+   Image redaction and physical-device acceptance still require evaluation.
+6. No government integration, no invented users, revenue, market size or traction.
+7. Proposed resident-free and organization-subscription model comes from the brief.
+   Pricing, demand and repeatability across organizations are hypotheses.
+8. No verified founder contact was found. The contact placeholder is intentional
+   and must be replaced before external distribution. Test account emails are not contacts.
+
+DESIGN REVIEW
+Two A4 compositions were created: a light editorial version and a navy hero version.
+Both were rendered to PNG and visually compared. The light version was selected:
+it preserves more whitespace, gives the phone a clear silhouette and uses less ink.
+The custom pulse mark and schematic map are original vector artwork. The phone is
+an English concept visualization based on existing product behavior; it is not a
+screenshot, an English localization claim, or evidence of live incident activity.
+Its blue palette follows the investor brief; the implemented app uses a different theme.
+
+VALIDATION
+The PDF was checked for one page, A4 dimensions, required copy and extractable text.
+No raster images are embedded in the PDF. Inter Regular/SemiBold/Bold are embedded.
+All text bounds are checked by the generator. Final PDF rendering was visually
+inspected for clipping, overlap, alignment and hierarchy.
+
+EDITING
+Open QalaPulse_OnePager.html in a browser. Click a text line and use the editing panel to change text, size, weight, color and position. Undo/redo and browser-local autosave are supported. Download HTML saves a portable editable copy. Lines retain fixed positions and do not reflow automatically; inspect the layout before export.
+Use Print / Save as PDF with A4 paper, no margins and background graphics enabled.
+For reproducible PDF/HTML generation, edit scripts/build_qalapulse_onepager.py and
+run it with Python containing reportlab and pypdf. Use Poppler pdftoppm at 300 dpi
+to regenerate QalaPulse_Preview.png. Font files and the OFL license are in assets/.
+The PDF, PNG and HTML share the same drawing geometry.

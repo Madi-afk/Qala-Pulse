@@ -11,7 +11,13 @@
   "searchHere": "Искать здесь",
   "refreshMap": "Обновить карту",
   "mapSearchArea": "Обращения в радиусе {radius} м от точки поиска. Переместите карту и нажмите «Искать здесь».",
-  "@mapSearchArea": {"placeholders": {"radius": {"type": "int"}}},
+  "@mapSearchArea": {
+    "placeholders": {
+      "radius": {
+        "type": "int"
+      }
+    }
+  },
   "mapResultsLimited": "Показаны первые 200 обращений. Приблизьте карту или уточните категорию.",
   "@@locale": "ru",
   "appName": "QalaPulse",
@@ -147,5 +153,24 @@
   "permissionSettings": "Открыть настройки разрешений",
   "dateFormat": "dd.MM.yyyy HH:mm",
   "requiredField": "Обязательное поле",
-  "offlineDraftHint": "Фото, точка и описание сохраняются автоматически. Для публикации нужен интернет."
+  "offlineDraftHint": "Фото, точка и описание сохраняются автоматически. Для публикации нужен интернет.",
+  "citizenPlatform": "Платформа жителей Казахстана",
+  "greeting": "Здравствуйте, {name}",
+  "mapExploreHint": "Посмотрите, что происходит в вашем районе",
+  "prioritySectionHint": "Обращения с наибольшим приоритетом",
+  "emptyFeedHint": "Заметили городскую проблему? Добавьте фото и отметьте место на карте.",
+  "joinCity": "Станьте частью\nперемен",
+  "welcomeBack": "Рады видеть\nвас снова",
+  "authSubtitle": "Сообщайте о проблемах и следите за тем, как меняется ваш район.",
+  "showPassword": "Показать пароль",
+  "hidePassword": "Скрыть пароль",
+  "yourActivity": "Ваше участие",
+  "@greeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationsTab": "События"
 }

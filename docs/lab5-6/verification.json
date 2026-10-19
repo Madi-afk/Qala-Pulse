@@ -1,0 +1,21 @@
+{
+  "nativeFigmaExecuted": false,
+  "note": "Contract tests only. Figma rendering and actual prototype playback require native import.",
+  "screens": 20,
+  "overlays": 20,
+  "checks": [
+    "complete publication path",
+    "human review gate",
+    "duplicate confirmation",
+    "offline save and retry",
+    "filter selection",
+    "overlay cancellation",
+    "repeat build preserves node count",
+    "pre-existing work preserved",
+    "Starter three-page limit: no page creation",
+    "existing flow start preserved",
+    "new content placed outside existing bounds",
+    "automatic Figma flow starts deduplicated"
+  ],
+  "message": "STARTER FIX v2.1 — Created 20 screens, 20 overlays and 123 transitions on the current page. Open Present → Report a city issue."
+}

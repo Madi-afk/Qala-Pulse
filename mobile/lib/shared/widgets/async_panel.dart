@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/errors/app_error.dart';
 import '../../core/localization/strings.dart';
+import '../../core/theme/app_theme.dart';
 
 class AsyncPanel<T> extends StatelessWidget {
   const AsyncPanel({
@@ -36,7 +37,13 @@ class AsyncPanel<T> extends StatelessWidget {
         children: [
           const Icon(Icons.cloud_off_rounded, size: 40),
           const SizedBox(height: 12),
-          Text(errorMessage(error, context.l)),
+          Semantics(
+            liveRegion: true,
+            child: Text(
+              errorMessage(error, context.l),
+              textAlign: TextAlign.center,
+            ),
+          ),
           const SizedBox(height: 12),
           OutlinedButton.icon(
             onPressed: onRetry,
@@ -58,19 +65,59 @@ class Notice extends StatelessWidget {
     margin: const EdgeInsets.symmetric(vertical: 10),
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: Theme.of(
-        context,
-      ).colorScheme.primaryContainer.withValues(alpha: 0.45),
-      borderRadius: BorderRadius.circular(16),
+      color: AppPalette.softGreen.withValues(alpha: 0.5),
+      borderRadius: BorderRadius.circular(10),
     ),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 20),
+        Icon(icon, size: 20, color: AppPalette.muted),
         const SizedBox(width: 12),
         Expanded(
           child: Text(text, style: Theme.of(context).textTheme.bodySmall),
         ),
+      ],
+    ),
+  );
+}
+
+class EmptyState extends StatelessWidget {
+  const EmptyState({
+    super.key,
+    required this.title,
+    required this.description,
+    required this.icon,
+    this.action,
+  });
+  final String title;
+  final String description;
+  final IconData icon;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(24),
+    decoration: BoxDecoration(
+      border: Border.all(color: AppPalette.line),
+      borderRadius: BorderRadius.circular(14),
+    ),
+    child: Column(
+      children: [
+        Icon(icon, size: 32, color: AppPalette.green),
+        const SizedBox(height: 12),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          description,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        if (action != null) ...[const SizedBox(height: 12), action!],
       ],
     ),
   );
