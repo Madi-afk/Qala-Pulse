@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     public_bucket: str = "qalapulse-redacted"
     max_image_bytes: int = 10 * 1024 * 1024
     max_audio_bytes: int = 15 * 1024 * 1024
+    privacy_mode: Literal["local", "full_frame"] = "local"
     ai_mode: Literal["mock", "cloud"] = "mock"
     ai_base_url: str = ""
     ai_api_key: str = ""

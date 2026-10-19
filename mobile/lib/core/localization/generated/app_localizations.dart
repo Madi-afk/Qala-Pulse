@@ -755,8 +755,38 @@ abstract class AppLocalizations {
   /// No description provided for @privacyNotice.
   ///
   /// In ru, this message translates to:
-  /// **'В MVP ко всему фото применяется сильная мозаика. Оригинал закрыт. Не включайте личные данные в текст.'**
+  /// **'Лица и номера ищутся локально, найденные области размываются. Автопоиск может ошибаться: проверьте весь снимок. Оригинал закрыт. Не включайте личные данные в текст.'**
   String get privacyNotice;
+
+  /// No description provided for @privacyFullFrameNotice.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ко всему фото применено размытие: выбран усиленный режим либо точечная обработка недоступна. Публикуется только эта версия.'**
+  String get privacyFullFrameNotice;
+
+  /// No description provided for @privacyNoRegions.
+  ///
+  /// In ru, this message translates to:
+  /// **'Лица и номера не найдены. Это не гарантирует их отсутствия — проверьте снимок перед публикацией.'**
+  String get privacyNoRegions;
+
+  /// No description provided for @privacyZoomHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нажмите на фото, чтобы увеличить и проверить детали.'**
+  String get privacyZoomHint;
+
+  /// No description provided for @privacyBlurAll.
+  ///
+  /// In ru, this message translates to:
+  /// **'Размыть фото целиком'**
+  String get privacyBlurAll;
+
+  /// No description provided for @privacyPublishConfirm.
+  ///
+  /// In ru, this message translates to:
+  /// **'Я проверил описание и публичное фото: видимых лиц, читаемых номеров и других личных данных нет.'**
+  String get privacyPublishConfirm;
 
   /// No description provided for @success.
   ///

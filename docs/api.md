@@ -21,7 +21,7 @@ curl -X POST http://localhost:8000/api/v1/auth/register \
 | GET, PATCH | /users/me | Профиль |
 | GET | /users/me/confirmations, /users/me/notifications | Личная активность |
 | GET | /categories | Справочник из БД |
-| POST | /uploads/images | multipart `file`, до 10 МБ |
+| POST | /uploads/images | multipart `file`, необязательный `full_frame=true`, до 10 МБ |
 | POST | /uploads/audio | multipart `file`, `language=ru|kk`, `cloud_consent`, до 15 МБ |
 | GET | /uploads/{id} | Состояние/транскрипт владельцу |
 | POST | /uploads/{id}/retry | Повтор задания |
@@ -53,7 +53,11 @@ curl -X POST http://localhost:8000/api/v1/uploads/images \
   -F 'file=@sample_data/images/demo.jpg;type=image/jpeg'
 ```
 
-Используйте возвращённый upload ID:
+Ответ и `GET /uploads/{id}` содержат `privacy_method` и `privacy_review_required=true` для изображений. Возможные методы: `local_opencv_regions_v1` (найдены области), `local_opencv_no_regions_v1` (области не найдены; не гарантия приватности), `whole_frame_detector_fallback` (сбой детектора), `whole_frame_mock_mosaic` (явное полное размытие, историческое имя метода).
+
+Загрузите `GET /uploads/{id}/preview` с авторизацией владельца и проверьте результат. Чтобы скрыть весь кадр, повторно загрузите файл с `-F 'full_frame=true'`; новый upload ID заменяет прежний в ещё не отправленном черновике. После начала публикации с idempotency key её payload нельзя менять до завершения или безопасной отмены. Оригинал через этот endpoint недоступен. Публичная фотография после публикации содержит те же байты, что предпросмотр.
+
+Используйте проверенный upload ID:
 
 ```http
 POST /api/v1/incidents

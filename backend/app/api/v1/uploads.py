@@ -10,7 +10,7 @@ from app.api.deps import Actor, Db
 from app.core.config import get_settings
 from app.core.errors import fail
 from app.db.models import Incident, IncidentMedia, Upload
-from app.services.privacy.redactor import ConservativeMockRedactor
+from app.services.privacy.redactor import get_privacy_redactor
 from app.services.storage.objects import ObjectStorage
 from app.workers.tasks import transcribe_upload
 
@@ -31,11 +31,17 @@ def upload_json(item: Upload) -> dict[str, Any]:
         "status": item.status,
         "transcript": item.transcript,
         "privacy_method": item.privacy_method,
+        "privacy_review_required": item.media_type == "image",
     }
 
 
 @router.post("/uploads/images", status_code=201)
-def upload_image(db: Db, user: Actor, file: Annotated[UploadFile, File()]) -> dict[str, Any]:
+def upload_image(
+    db: Db,
+    user: Actor,
+    file: Annotated[UploadFile, File()],
+    full_frame: Annotated[bool, Form()] = False,
+) -> dict[str, Any]:
     data = file.file.read(get_settings().max_image_bytes + 1)
     if not data or len(data) > get_settings().max_image_bytes:
         raise fail("file_too_large", "Размер фотографии превышает лимит", 413)
@@ -45,7 +51,7 @@ def upload_image(db: Db, user: Actor, file: Annotated[UploadFile, File()]) -> di
             if image.format not in allowed or allowed[image.format] != file.content_type:
                 raise fail("invalid_file", "Разрешены JPEG, PNG и WebP", 415)
             image.verify()
-        redacted, thumbnail, method = ConservativeMockRedactor().redact(data)
+        redacted, thumbnail, method = get_privacy_redactor(full_frame=full_frame).redact(data)
     except (
         UnidentifiedImageError,
         OSError,

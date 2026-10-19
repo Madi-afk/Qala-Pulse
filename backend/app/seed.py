@@ -25,7 +25,7 @@ from app.db.models import (
 from app.db.session import SessionLocal
 from app.repositories.incidents import recalculate
 from app.services.ai.providers import LABELS
-from app.services.privacy.redactor import ConservativeMockRedactor
+from app.services.privacy.redactor import get_privacy_redactor
 from app.services.storage.objects import ObjectStorage
 
 DEMO_PASSWORD = "QalaPulse-Demo-2026!"
@@ -143,7 +143,7 @@ def seed() -> None:
             db.add(item)
             upload_id = seed_id(f"upload-{index}")
             original = sample_image(index)
-            redacted, thumb, method = ConservativeMockRedactor().redact(original)
+            redacted, thumb, method = get_privacy_redactor().redact(original)
             key = f"demo/{upload_id}"
             storage.put(f"{key}/original", original, "image/jpeg")
             storage.put(f"{key}/image.jpg", redacted, "image/jpeg", public=True)

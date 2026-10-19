@@ -30,6 +30,8 @@ class _CreateScreenState extends ConsumerState<CreateScreen> {
   bool busy = false;
   List<Map<String, dynamic>>? candidates;
   Uint8List? photo, preview;
+  String? privacyMethod;
+  String? previewUploadId;
   String? loadedPhoto;
   String? displayedOwner;
   final picker = ImagePicker();
@@ -85,6 +87,9 @@ class _CreateScreenState extends ConsumerState<CreateScreen> {
     if (file != null) {
       await ref.read(draftProvider.notifier).setPhoto(file);
       loadedPhoto = null;
+      preview = null;
+      previewUploadId = null;
+      privacyMethod = null;
     }
   });
   Future<void> loadPhoto(IncidentDraft draft) async {
@@ -98,8 +103,19 @@ class _CreateScreenState extends ConsumerState<CreateScreen> {
     }
   }
 
-  Future<void> loadPreview() async {
-    final id = await ref.read(draftProvider.notifier).uploadPhoto();
+  Future<void> loadPreview({bool fullFrame = false}) async {
+    final owner = ref.read(authProvider).asData?.value?.id;
+    final id = await ref
+        .read(draftProvider.notifier)
+        .uploadPhoto(fullFrame: fullFrame);
+    if (mounted) {
+      setState(() {
+        preview = null;
+        previewUploadId = null;
+        privacyMethod = null;
+      });
+    }
+    final status = await ref.read(apiProvider).get('/uploads/$id');
     final result = await ref
         .read(apiProvider)
         .dio
@@ -107,8 +123,14 @@ class _CreateScreenState extends ConsumerState<CreateScreen> {
           '/uploads/$id/preview',
           options: Options(responseType: ResponseType.bytes),
         );
-    if (mounted) {
-      setState(() => preview = Uint8List.fromList(result.data!));
+    if (mounted &&
+        owner == ref.read(authProvider).asData?.value?.id &&
+        id == ref.read(draftProvider).uploadId) {
+      setState(() {
+        preview = Uint8List.fromList(result.data!);
+        previewUploadId = id;
+        privacyMethod = status['privacy_method'] as String?;
+      });
     }
   }
 
@@ -118,6 +140,7 @@ class _CreateScreenState extends ConsumerState<CreateScreen> {
     if (displayedOwner != user?.id) {
       displayedOwner = user?.id;
       photo = preview = null;
+      privacyMethod = previewUploadId = null;
       loadedPhoto = null;
       candidates = null;
     }
@@ -491,28 +514,68 @@ class _CreateScreenState extends ConsumerState<CreateScreen> {
             '${draft.latitude?.toStringAsFixed(5)}, ${draft.longitude?.toStringAsFixed(5)}',
           ),
           Notice(context.l.privacyNotice),
+          if (privacyMethod?.startsWith('whole_frame') ?? false)
+            Notice(context.l.privacyFullFrameNotice),
+          if (privacyMethod == 'local_opencv_no_regions_v1')
+            Notice(context.l.privacyNoRegions),
           Text(context.l.privacyPreview),
-          if (preview != null)
+          if (preview != null && previewUploadId == draft.uploadId)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Image.memory(preview!, height: 200, fit: BoxFit.cover),
+              child: InkWell(
+                onTap: () => showDialog<void>(
+                  context: context,
+                  builder: (dialogContext) => Dialog.fullscreen(
+                    child: Scaffold(
+                      appBar: AppBar(title: Text(context.l.privacyPreview)),
+                      body: InteractiveViewer(
+                        minScale: 1,
+                        maxScale: 5,
+                        child: Center(
+                          child: Image.memory(preview!, fit: BoxFit.contain),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                child: Image.memory(preview!, height: 240, fit: BoxFit.contain),
+              ),
             )
           else
             OutlinedButton(
               onPressed: busy ? null : () => run(loadPreview),
               child: Text(context.l.photo),
             ),
+          Text(context.l.privacyZoomHint),
+          OutlinedButton.icon(
+            onPressed:
+                busy ||
+                    draft.pendingPayload != null ||
+                    (privacyMethod?.startsWith('whole_frame') ?? false)
+                ? null
+                : () => run(() => loadPreview(fullFrame: true)),
+            icon: const Icon(Icons.blur_on),
+            label: Text(context.l.privacyBlurAll),
+          ),
           Notice(context.l.honestNotice),
           CheckboxListTile(
             contentPadding: EdgeInsets.zero,
             value: draft.reviewed,
-            onChanged: busy || draft.pendingPayload != null
+            onChanged:
+                busy ||
+                    draft.pendingPayload != null ||
+                    preview == null ||
+                    previewUploadId != draft.uploadId
                 ? null
                 : (value) => update(draft.copyWith(reviewed: value ?? false)),
-            title: Text(context.l.publishConfirm),
+            title: Text(context.l.privacyPublishConfirm),
           ),
           FilledButton.icon(
-            onPressed: busy || !draft.reviewed
+            onPressed:
+                busy ||
+                    !draft.reviewed ||
+                    (draft.pendingPayload == null &&
+                        (preview == null || previewUploadId != draft.uploadId))
                 ? null
                 : () => run(() async {
                     final result = await controller.publish();

@@ -103,9 +103,13 @@ class DraftController extends Notifier<IncidentDraft> {
     return File(state.photoPath!).readAsBytes();
   }
 
-  Future<String> uploadPhoto() async {
+  Future<String> uploadPhoto({bool fullFrame = false}) async {
+    if (fullFrame && state.pendingPayload != null) {
+      throw StateError('publication_locked');
+    }
     final owner = ref.read(draftStoreProvider).owner;
-    if (state.uploadId != null) return state.uploadId!;
+    if (state.uploadId != null && !fullFrame) return state.uploadId!;
+    if (fullFrame) await update(state.copyWith(reviewed: false));
     final bytes = await photoBytes();
     _requireOwner(owner);
     final mime = bytes.length > 3 && bytes[0] == 0x89
@@ -119,6 +123,7 @@ class DraftController extends Notifier<IncidentDraft> {
         .post(
           '/uploads/images',
           FormData.fromMap({
+            'full_frame': fullFrame,
             'file': MultipartFile.fromBytes(
               bytes,
               filename: 'incident',
@@ -128,7 +133,7 @@ class DraftController extends Notifier<IncidentDraft> {
         );
     final id = response['id'] as String;
     _requireOwner(owner);
-    await update(state.copyWith(uploadId: id));
+    await update(state.copyWith(uploadId: id, reviewed: false));
     return id;
   }
 

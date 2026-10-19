@@ -20,6 +20,7 @@ os.environ.update(
     RATE_LIMIT_ENABLED="false",
     TASK_ALWAYS_EAGER="true",
     AI_MODE="mock",
+    PRIVACY_MODE="local",
 )
 
 from app.db.base import Base  # noqa: E402
