@@ -16,6 +16,33 @@ def run(args, **kwargs):
     return subprocess.run(args, cwd=ROOT, check=True, timeout=1800, **kwargs)
 
 
+def reclaim_test_files(work: Path) -> None:
+    """Return container-created files to the runner without widening permissions."""
+    if os.name != "posix":
+        return
+    directory = work.resolve(strict=True)
+    if directory.parent != (
+        ROOT / "artifacts"
+    ).resolve() or not directory.name.startswith("pilot-recovery-"):
+        raise ValueError(
+            "Ownership repair is restricted to this test's temporary directory"
+        )
+    run(
+        [
+            "docker",
+            "run",
+            "--rm",
+            "-v",
+            f"{directory.as_posix()}:/work",
+            "alpine:3.21.3",
+            "chown",
+            "-hR",
+            f"{os.getuid()}:{os.getgid()}",
+            "/work",
+        ]
+    )
+
+
 def main():
     identity = uuid4().hex[:10]
     projects = [f"qalapulse-backuptest-{identity}", f"qalapulse-restoretest-{identity}"]
@@ -168,6 +195,7 @@ def main():
                 [*restic, "restore", "latest", "--target", "/work/recovered"],
                 env=restic_env,
             )
+            reclaim_test_files(work)
             recovered = work / "recovered" / "work" / "source"
             target_env = env | {
                 "DRILL_SNAPSHOT": recovered.as_posix(),
@@ -261,22 +289,7 @@ def main():
                 check=False,
                 capture_output=True,
             )
-            # Container-created test files may be root-owned on Linux.
-            if os.name == "posix":
-                run(
-                    [
-                        "docker",
-                        "run",
-                        "--rm",
-                        "-v",
-                        f"{work}:/work",
-                        "alpine:3.21.3",
-                        "chmod",
-                        "-R",
-                        "a+rwX",
-                        "/work",
-                    ]
-                )
+            reclaim_test_files(work)
 
 
 if __name__ == "__main__":
