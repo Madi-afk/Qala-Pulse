@@ -1,0 +1,10 @@
+[Unit]
+Description=Weekly QalaPulse isolated restore drill
+
+[Timer]
+OnCalendar=Sun *-*-* 03:30:00 UTC
+Persistent=true
+Unit=qalapulse-maintenance@restore-drill.service
+
+[Install]
+WantedBy=timers.target

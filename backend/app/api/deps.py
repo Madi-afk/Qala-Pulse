@@ -34,7 +34,7 @@ def current_user(
         user = db.get(User, UUID(claims["sub"]))
     except (jwt.PyJWTError, ValueError, KeyError):
         raise fail("invalid_token", "Сессия истекла", 401) from None
-    if user is None or not user.is_active:
+    if user is None or not user.is_active or claims.get("ver", 0) != user.auth_version:
         raise fail("invalid_token", "Сессия недоступна", 401)
     return user
 

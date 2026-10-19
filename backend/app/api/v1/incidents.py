@@ -69,6 +69,8 @@ def analyze(data: Analyze, db: Db, user: Actor) -> dict[str, Any]:
     upload = owned_upload(db, data.upload_id, user.id)
     if upload.media_type != "image":
         raise fail("invalid_image", "Нужна фотография", 422)
+    if not upload.original_key:
+        raise fail("upload_expired", "Срок хранения оригинала истёк. Загрузите фото заново", 410)
     raw = ObjectStorage().get(upload.original_key)
     # Strip EXIF/GPS before an explicitly consented cloud request.
     with Image.open(BytesIO(raw)) as source:

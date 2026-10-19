@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "playwright test",
-    "format:check": "prettier --check ../backend/app/console/ tests/ playwright.config.js"
+    "format:check": "prettier --check ../backend/app/console/ ../backend/app/account/ tests/ playwright.config.js"
   },
   "devDependencies": {
     "@playwright/test": "1.58.2",

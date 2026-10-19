@@ -141,12 +141,21 @@ class DraftController extends Notifier<IncidentDraft> {
     final owner = ref.read(draftStoreProvider).owner;
     final upload = await uploadPhoto();
     _requireOwner(owner);
-    final response = await ref.read(apiProvider).post('/incidents/analyze', {
-      'upload_id': upload,
-      'description': state.description,
-      'language': language,
-      'cloud_consent': state.cloudConsent,
-    });
+    late final Map<String, dynamic> response;
+    try {
+      response = await ref.read(apiProvider).post('/incidents/analyze', {
+        'upload_id': upload,
+        'description': state.description,
+        'language': language,
+        'cloud_consent': state.cloudConsent,
+      });
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 410) {
+        _requireOwner(owner);
+        await update(state.copyWith(uploadId: null, reviewed: false, step: 0));
+      }
+      rethrow;
+    }
     final result = response['result'] as Map<String, dynamic>;
     _requireOwner(owner);
     await update(
@@ -222,21 +231,25 @@ class DraftController extends Notifier<IncidentDraft> {
       final code = detail is Map ? detail['code'] as String? : null;
       final saved = store.load();
       if (saved?.pendingPayload != null) {
+        final expired =
+            error.response?.statusCode == 410 && code == 'upload_expired';
         final definitive =
-            error.response?.statusCode == 422 &&
-            {
-              'invalid_category',
-              'review_required',
-              'duplicate_upload',
-              'redaction_required',
-            }.contains(code);
+            expired ||
+            (error.response?.statusCode == 422 &&
+                {
+                  'invalid_category',
+                  'review_required',
+                  'duplicate_upload',
+                  'redaction_required',
+                }.contains(code));
         final next = definitive
             ? saved!.copyWith(
                 key: const Uuid().v4(),
                 pendingPayload: null,
                 waitingToSend: false,
                 reviewed: false,
-                step: 4,
+                uploadId: expired ? null : saved.uploadId,
+                step: expired ? 0 : 4,
                 publicationError: code,
               )
             : saved!.copyWith(publicationError: code ?? 'publication_unknown');

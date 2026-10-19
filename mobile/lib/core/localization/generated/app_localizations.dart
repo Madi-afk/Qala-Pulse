@@ -1081,6 +1081,36 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'События'**
   String get notificationsTab;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In ru, this message translates to:
+  /// **'Забыли пароль?'**
+  String get forgotPassword;
+
+  /// No description provided for @uploadExpired.
+  ///
+  /// In ru, this message translates to:
+  /// **'Срок хранения фото истёк. Загрузите его снова и проверьте обработку. Текст и координаты сохранены.'**
+  String get uploadExpired;
+
+  /// No description provided for @pilotInvitationRequired.
+  ///
+  /// In ru, this message translates to:
+  /// **'Регистрация доступна приглашённым участникам пилота. Обратитесь к организатору.'**
+  String get pilotInvitationRequired;
+
+  /// No description provided for @sendRecovery.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отправить ссылку'**
+  String get sendRecovery;
+
+  /// No description provided for @recoverySent.
+  ///
+  /// In ru, this message translates to:
+  /// **'Если активная учётная запись существует, письмо придёт на указанный адрес. Проверьте папку «Спам» и откройте ссылку в браузере. После смены пароля вернитесь в приложение и войдите заново.'**
+  String get recoverySent;
 }
 
 class _AppLocalizationsDelegate

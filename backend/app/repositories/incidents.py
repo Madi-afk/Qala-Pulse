@@ -80,6 +80,7 @@ def serialize(db: Session, item: Incident) -> dict[str, Any]:
                 "thumbnail_url": m.thumbnail_url,
             }
             for m in media
+            if m.redacted_url
         ],
     }
 

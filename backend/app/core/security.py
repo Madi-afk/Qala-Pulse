@@ -42,6 +42,7 @@ def issue_tokens(db: Session, user: User, family: UUID | None = None) -> dict[st
             "iss": "qalapulse",
             "aud": "qalapulse-mobile",
             "jti": str(uuid4()),
+            "ver": user.auth_version,
         },
         settings.jwt_secret,
         algorithm="HS256",

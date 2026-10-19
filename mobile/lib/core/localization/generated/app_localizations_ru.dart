@@ -537,4 +537,22 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get notificationsTab => 'События';
+
+  @override
+  String get forgotPassword => 'Забыли пароль?';
+
+  @override
+  String get uploadExpired =>
+      'Срок хранения фото истёк. Загрузите его снова и проверьте обработку. Текст и координаты сохранены.';
+
+  @override
+  String get pilotInvitationRequired =>
+      'Регистрация доступна приглашённым участникам пилота. Обратитесь к организатору.';
+
+  @override
+  String get sendRecovery => 'Отправить ссылку';
+
+  @override
+  String get recoverySent =>
+      'Если активная учётная запись существует, письмо придёт на указанный адрес. Проверьте папку «Спам» и откройте ссылку в браузере. После смены пароля вернитесь в приложение и войдите заново.';
 }

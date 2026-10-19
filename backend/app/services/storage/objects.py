@@ -1,3 +1,5 @@
+from collections.abc import Iterator
+from datetime import UTC, datetime
 from io import BytesIO
 from pathlib import Path
 
@@ -46,3 +48,30 @@ class ObjectStorage:
             self.client.bucket_exists(bucket)
             for bucket in [self.settings.private_bucket, self.settings.public_bucket]
         )
+
+    def delete(self, key: str, public: bool = False) -> None:
+        if not key:
+            return
+        if self.settings.storage_mode == "local":
+            root = (Path(self.settings.storage_path) / self.bucket(public)).resolve()
+            target = (root / key).resolve()
+            if not target.is_relative_to(root) or target == root:
+                raise ValueError("Invalid object key")
+            target.unlink(missing_ok=True)
+        else:
+            self.client.remove_object(self.bucket(public), key)
+
+    def inventory(self, public: bool = False) -> Iterator[tuple[str, datetime]]:
+        bucket = self.bucket(public)
+        if self.settings.storage_mode == "local":
+            root = Path(self.settings.storage_path) / bucket
+            for path in root.rglob("*"):
+                if path.is_file():
+                    yield (
+                        path.relative_to(root).as_posix(),
+                        datetime.fromtimestamp(path.stat().st_mtime, UTC),
+                    )
+        else:
+            for item in self.client.list_objects(bucket, recursive=True):
+                if item.object_name and item.last_modified:
+                    yield item.object_name, item.last_modified

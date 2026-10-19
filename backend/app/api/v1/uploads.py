@@ -18,9 +18,11 @@ router = APIRouter(tags=["uploads"])
 
 
 def owned_upload(db: Db, upload_id: UUID, user_id: UUID) -> Upload:
-    item = db.get(Upload, upload_id)
+    item = db.scalar(select(Upload).where(Upload.id == upload_id).with_for_update())
     if item is None or item.owner_id != user_id:
         raise fail("upload_not_found", "Файл не найден", 404)
+    if item.status == "expired":
+        raise fail("upload_expired", "Срок хранения файла истёк. Загрузите его заново", 410)
     return item
 
 

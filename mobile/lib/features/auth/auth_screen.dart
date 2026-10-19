@@ -7,6 +7,7 @@ import '../../shared/widgets/async_panel.dart';
 import '../../shared/widgets/brand_mark.dart';
 import '../../core/theme/app_theme.dart';
 import 'auth_controller.dart';
+import 'recovery_screen.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -166,6 +167,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                               ),
                       ),
                     ),
+                    if (!registering)
+                      TextButton(
+                        onPressed: auth.isLoading
+                            ? null
+                            : () => Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                  builder: (_) => const RecoveryScreen(),
+                                ),
+                              ),
+                        child: Text(context.l.forgotPassword),
+                      ),
                     TextButton(
                       onPressed: auth.isLoading
                           ? null

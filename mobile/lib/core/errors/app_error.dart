@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import '../localization/generated/app_localizations.dart';
 
 String publicationMessage(String code, AppLocalizations l) => switch (code) {
+  'upload_expired' => l.uploadExpired,
   'invalid_category' => l.invalidCategory,
   'idempotency_conflict' => l.publicationConflict,
   'upload_already_used' => l.uploadAlreadyUsed,
@@ -18,6 +19,8 @@ String errorMessage(Object error, AppLocalizations l) {
     final detail = body is Map ? body['error'] : null;
     final code = detail is Map ? detail['code'] : null;
     return switch (code) {
+      'upload_expired' => l.uploadExpired,
+      'pilot_invitation_required' => l.pilotInvitationRequired,
       'invalid_credentials' => l.invalidCredentials,
       'email_unavailable' => l.emailUnavailable,
       'already_confirmed' => l.alreadyConfirmed,

@@ -1,11 +1,12 @@
 import hashlib
 import logging
+import secrets
 import time
 from collections.abc import Awaitable, Callable
 from pathlib import Path
 from uuid import uuid4
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Header, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -17,9 +18,19 @@ from sqlalchemy.exc import IntegrityError
 from starlette.exceptions import HTTPException
 
 from app.api.deps import Actor, require_role
-from app.api.v1 import auth, confirmations, health, incidents, moderation, operations, uploads
+from app.api.v1 import (
+    auth,
+    confirmations,
+    health,
+    incidents,
+    moderation,
+    operations,
+    recovery,
+    uploads,
+)
 from app.core.body_limit import RequestSizeLimit
 from app.core.config import get_settings
+from app.core.errors import fail
 from app.core.logging import configure_logging
 
 configure_logging()
@@ -138,7 +149,7 @@ async def observe(
     route = getattr(request.scope.get("route"), "path", "unmatched")
     response.headers["X-Request-ID"] = request.state.request_id
     response.headers["X-Content-Type-Options"] = "nosniff"
-    if request.url.path.startswith("/console"):
+    if request.url.path.startswith(("/console", "/account")):
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; script-src 'self'; style-src 'self'; "
             "img-src 'self' blob:; connect-src 'self'; font-src 'self'; "
@@ -148,6 +159,8 @@ async def observe(
         response.headers["Cache-Control"] = "no-store"
     if request.url.path.startswith("/api/v1/operations"):
         response.headers["Cache-Control"] = "private, no-store"
+    if request.url.path.startswith("/api/v1/auth"):
+        response.headers["Cache-Control"] = "no-store"
     logger.info(
         "request",
         extra={
@@ -165,6 +178,7 @@ async def observe(
 for router in [
     health.router,
     auth.router,
+    recovery.router,
     uploads.router,
     incidents.router,
     confirmations.router,
@@ -176,6 +190,17 @@ for router in [
 app.mount(
     "/console", StaticFiles(directory=Path(__file__).parent / "console", html=True), name="console"
 )
+app.mount(
+    "/account", StaticFiles(directory=Path(__file__).parent / "account", html=True), name="account"
+)
+
+
+@app.get("/internal/metrics", include_in_schema=False)
+def internal_metrics(authorization: str = Header(default="")) -> Response:
+    expected = f"Bearer {settings.metrics_token}"
+    if not settings.metrics_token or not secrets.compare_digest(authorization, expected):
+        raise fail("forbidden", "Недостаточно прав", 403)
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 @app.get("/metrics", include_in_schema=False)

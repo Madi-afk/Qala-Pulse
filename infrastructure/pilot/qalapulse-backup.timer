@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily QalaPulse encrypted backup
+
+[Timer]
+OnCalendar=*-*-* 02:30:00 UTC
+Persistent=true
+Unit=qalapulse-maintenance@backup.service
+
+[Install]
+WantedBy=timers.target

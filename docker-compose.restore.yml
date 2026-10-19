@@ -1,0 +1,37 @@
+# Isolated restore drill: no published ports, no production volumes, no external emails.
+services:
+  postgres:
+    image: postgis/postgis:17-3.5
+    environment:
+      POSTGRES_USER: qalapulse
+      POSTGRES_PASSWORD: ${DRILL_PASSWORD:?Generated per drill}
+      POSTGRES_DB: postgres
+    volumes: ['drill-postgres:/var/lib/postgresql/data']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U qalapulse -d postgres']
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  minio:
+    image: qalapulse-minio:2025-04-22-0d7408fc
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: drill-user
+      MINIO_ROOT_PASSWORD: ${DRILL_PASSWORD}
+    volumes: ['drill-minio:/data']
+  verify:
+    image: qalapulse-backend:pilot
+    user: '0:0'
+    environment:
+      ENVIRONMENT: test
+      RESTORE_DRILL: '1'
+      DATABASE_URL: postgresql+psycopg://qalapulse:${DRILL_PASSWORD}@postgres:5432/qalapulse_restore
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: drill-user
+      MINIO_SECRET_KEY: ${DRILL_PASSWORD}
+      JWT_SECRET: ${DRILL_PASSWORD}
+    volumes: ['${DRILL_SNAPSHOT:?Required}:/backup:${DRILL_MOUNT_MODE:-ro}']
+    entrypoint: ['python', '-m', 'app.backup']
+volumes:
+  drill-postgres:
+  drill-minio:

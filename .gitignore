@@ -1,6 +1,8 @@
 .env
 .env.*
 !.env.example
+!.env.pilot.example
+/.pilot/
 .venv/
 .tools/
 __pycache__/

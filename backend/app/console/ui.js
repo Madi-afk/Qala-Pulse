@@ -117,7 +117,7 @@ export function actionForm(
   controls,
   submitLabel,
   action,
-  { description = "" } = {},
+  { description = "", successMessage = "Сохранено" } = {},
 ) {
   const feedback = el("div", { class: "feedback" });
   const submit = el(
@@ -146,11 +146,11 @@ export function actionForm(
     feedback.replaceChildren();
     try {
       await action(data);
-      if (form.isConnected)
+      if (form.isConnected && successMessage)
         feedback.replaceChildren(
-          el("p", { role: "status", class: "success" }, "Сохранено"),
+          el("p", { role: "status", class: "success" }, successMessage),
         );
-      announce("Изменения сохранены");
+      if (successMessage) announce(successMessage);
     } catch (error) {
       if (form.isConnected) feedback.replaceChildren(errorBox(error));
     } finally {

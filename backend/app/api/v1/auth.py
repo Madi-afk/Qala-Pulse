@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from sqlalchemy import select, update
 
 from app.api.deps import Actor, Db
+from app.core.config import get_settings
 from app.core.errors import fail
 from app.core.security import digest, hash_password, issue_tokens, verify_password
 from app.db.base import utcnow
@@ -27,6 +28,13 @@ def profile(user: User) -> dict[str, Any]:
 @router.post("/auth/register", status_code=201)
 def register(data: Register, db: Db) -> dict[str, Any]:
     email = str(data.email).lower()
+    settings = get_settings()
+    if settings.pilot_registration_closed and email not in {
+        item.lower() for item in settings.pilot_registration_emails
+    }:
+        raise fail(
+            "pilot_invitation_required", "Регистрация доступна участникам закрытого пилота", 403
+        )
     if db.scalar(select(User).where(User.email == email)):
         raise fail("email_unavailable", "Этот адрес недоступен", 409)
     user = User(
@@ -43,7 +51,7 @@ def register(data: Register, db: Db) -> dict[str, Any]:
 
 @router.post("/auth/login")
 def login(data: Login, db: Db) -> dict[str, Any]:
-    user = db.scalar(select(User).where(User.email == str(data.email).lower()))
+    user = db.scalar(select(User).where(User.email == str(data.email).lower()).with_for_update())
     if user is None or not user.is_active or not verify_password(data.password, user.password_hash):
         raise fail("invalid_credentials", "Неверные данные входа", 401)
     return {**issue_tokens(db, user), "user": profile(user)}
@@ -52,12 +60,14 @@ def login(data: Login, db: Db) -> dict[str, Any]:
 @router.post("/auth/refresh")
 def refresh(data: Refresh, db: Db) -> dict[str, str]:
     session = db.scalar(
-        select(RefreshSession)
-        .where(RefreshSession.token_hash == digest(data.refresh_token))
-        .with_for_update()
+        select(RefreshSession).where(RefreshSession.token_hash == digest(data.refresh_token))
     )
     if session is None:
         raise fail("invalid_refresh", "Сессия истекла", 401)
+    # Same lock order as password reset: user, then session. A reset cannot race
+    # with refresh and leave behind a new usable session.
+    user = db.scalar(select(User).where(User.id == session.user_id).with_for_update())
+    db.refresh(session, with_for_update=True)
     if session.revoked:
         db.execute(
             update(RefreshSession)
@@ -68,7 +78,6 @@ def refresh(data: Refresh, db: Db) -> dict[str, str]:
         raise fail("refresh_reused", "Войдите повторно", 401)
     if session.expires_at.replace(tzinfo=UTC) < utcnow():
         raise fail("invalid_refresh", "Сессия истекла", 401)
-    user = db.get(User, session.user_id)
     if user is None or not user.is_active:
         raise fail("invalid_refresh", "Сессия недоступна", 401)
     session.revoked = True

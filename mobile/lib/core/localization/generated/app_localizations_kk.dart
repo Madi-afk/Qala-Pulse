@@ -535,4 +535,22 @@ class AppLocalizationsKk extends AppLocalizations {
 
   @override
   String get notificationsTab => 'Хабарлар';
+
+  @override
+  String get forgotPassword => 'Құпиясөзді ұмыттыңыз ба?';
+
+  @override
+  String get uploadExpired =>
+      'Фотоның сақтау мерзімі өтті. Қайта жүктеп, өңдеуді тексеріңіз. Мәтін мен координаттар сақталған.';
+
+  @override
+  String get pilotInvitationRequired =>
+      'Тіркелу пилотқа шақырылған қатысушыларға қолжетімді. Ұйымдастырушыға хабарласыңыз.';
+
+  @override
+  String get sendRecovery => 'Сілтеме жіберу';
+
+  @override
+  String get recoverySent =>
+      'Белсенді тіркелгі бар болса, көрсетілген мекенжайға хат келеді. «Спам» қалтасын тексеріп, сілтемені браузерде ашыңыз. Құпиясөзді өзгерткеннен кейін қолданбаға қайта кіріңіз.';
 }

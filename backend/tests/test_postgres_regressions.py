@@ -2,7 +2,7 @@
 
 import os
 from concurrent.futures import ThreadPoolExecutor
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import uuid4
 
@@ -11,6 +11,7 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import MetaData, Table, create_engine, text
+from sqlalchemy.orm import Session
 
 pytestmark = [
     pytest.mark.integration,
@@ -18,6 +19,88 @@ pytestmark = [
         os.getenv("QALAPULSE_INTEGRATION_ISOLATED") != "1", reason="Requires isolated test stack"
     ),
 ]
+
+
+def test_postgres_reset_is_single_use_and_serializes_refresh():
+    from app.core.security import digest
+    from app.db.models import PasswordReset
+
+    engine = create_engine(os.environ["INTEGRATION_DATABASE_URL"])
+    api_url = os.environ["INTEGRATION_API_URL"]
+    with httpx.Client(base_url=api_url, timeout=20) as client:
+        email = f"reset-{uuid4().hex}@example.com"
+        account = client.post(
+            "/auth/register",
+            json={
+                "email": email,
+                "password": "Test-only-reset-2026!",
+                "display_name": "Reset test",
+            },
+        ).json()
+        from uuid import UUID
+
+        user_id = UUID(account["user"]["id"])
+        token = uuid4().hex + uuid4().hex
+        with Session(engine) as db:
+            db.add(
+                PasswordReset(
+                    user_id=user_id,
+                    token_hash=digest(token),
+                    expires_at=datetime.now(UTC) + timedelta(minutes=5),
+                )
+            )
+            db.commit()
+
+        def reset():
+            return client.post(
+                "/auth/reset-password", json={"token": token, "password": "Updated-reset-2026!"}
+            )
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            outcomes = list(pool.map(lambda _: reset().status_code, range(2)))
+        assert sorted(outcomes) == [200, 400]
+        assert (
+            client.get(
+                "/users/me", headers={"Authorization": f"Bearer {account['access_token']}"}
+            ).status_code
+            == 401
+        )
+        current = client.post(
+            "/auth/login", json={"email": email, "password": "Updated-reset-2026!"}
+        ).json()
+        token = uuid4().hex + uuid4().hex
+        with Session(engine) as db:
+            db.add(
+                PasswordReset(
+                    user_id=user_id,
+                    token_hash=digest(token),
+                    expires_at=datetime.now(UTC) + timedelta(minutes=5),
+                )
+            )
+            db.commit()
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            resetting = pool.submit(reset)
+            refreshing = pool.submit(
+                client.post, "/auth/refresh", json={"refresh_token": current["refresh_token"]}
+            )
+            reset_result, refresh_result = resetting.result(), refreshing.result()
+        assert reset_result.status_code == 200
+        assert refresh_result.status_code in (200, 401)
+        if refresh_result.status_code == 200:
+            issued = refresh_result.json()
+            assert (
+                client.get(
+                    "/users/me", headers={"Authorization": f"Bearer {issued['access_token']}"}
+                ).status_code
+                == 401
+            )
+            assert (
+                client.post(
+                    "/auth/refresh", json={"refresh_token": issued["refresh_token"]}
+                ).status_code
+                == 401
+            )
+    engine.dispose()
 
 
 def test_postgres_migration_preserves_legacy_confirmations():

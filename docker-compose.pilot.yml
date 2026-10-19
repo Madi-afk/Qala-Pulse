@@ -1,0 +1,150 @@
+name: qalapulse-pilot
+x-app: &app
+  image: qalapulse-backend:pilot
+  build: ./backend
+  env_file: ${PILOT_ENV_FILE:-.env.pilot}
+  environment: &app-env
+    DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    REDIS_URL: redis://redis:6379/0
+    MINIO_ENDPOINT: minio:9000
+    MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+    MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+  restart: unless-stopped
+  logging: &logging
+    driver: json-file
+    options: {max-size: 10m, max-file: '5'}
+services:
+  caddy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    environment:
+      PILOT_DOMAIN: ${PILOT_DOMAIN:?Set a real domain}
+      ACME_EMAIL: ${ACME_EMAIL:?Set the operator email}
+    ports: ['80:80', '443:443', '443:443/udp']
+    volumes:
+      - ./infrastructure/pilot/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      backend: {condition: service_healthy}
+    logging: *logging
+  postgres:
+    image: postgis/postgis:17-3.5
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Required}
+      POSTGRES_DB: ${POSTGRES_DB:?Required}
+    volumes: ['postgres-data:/var/lib/postgresql/data']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    logging: *logging
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes: ['redis-data:/data']
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    logging: *logging
+  minio:
+    image: qalapulse-minio:2025-04-22-0d7408fc
+    build:
+      context: ./infrastructure/minio
+      args: {COMPONENT: minio, SOURCE_COMMIT: 0d7408fc9969caf07de6a8c3a84f9fbb10a6739e}
+    command: server /data --console-address :9001
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Required}
+    volumes: ['minio-data:/data']
+    logging: *logging
+  minio-init:
+    image: qalapulse-mc:2025-08-13-7394ce0d
+    build:
+      context: ./infrastructure/minio
+      args: {COMPONENT: mc, SOURCE_COMMIT: 7394ce0dd2a80935aded936b09fa12cbb3cb8096}
+    depends_on: [minio]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - |
+        set -eu
+        for attempt in $$(seq 1 60); do
+          mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" >/dev/null 2>&1 && break
+          sleep 2
+        done
+        mc mb --ignore-existing local/qalapulse-originals local/qalapulse-redacted
+        mc anonymous set none local/qalapulse-originals
+        mc anonymous set none local/qalapulse-redacted
+    logging: *logging
+  backend:
+    <<: *app
+    command: ['sh', '-c', 'alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips=* --no-access-log']
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+      minio-init: {condition: service_completed_successfully}
+    healthcheck:
+      test: ['CMD', 'python', '-c', "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/ready', timeout=10)"]
+      interval: 15s
+      timeout: 12s
+      retries: 20
+  worker:
+    <<: *app
+    command: ['celery', '-A', 'app.workers.tasks.celery_app', 'worker', '--loglevel=WARNING', '--concurrency=2']
+    stop_grace_period: 150s
+    depends_on:
+      backend: {condition: service_healthy}
+  ops:
+    <<: *app
+    profiles: [tools]
+    restart: 'no'
+    user: '0:0'
+    volumes: ['./.pilot/transfer:/backup']
+    entrypoint: ['python', '-m', 'app.backup']
+  ops-metrics:
+    <<: *app
+    command: ['python', '-m', 'app.ops_metrics']
+    volumes: ['./.pilot/state:/state:ro']
+    depends_on: [redis]
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    restart: unless-stopped
+    command: ['--config.file=/etc/prometheus/prometheus.json', '--storage.tsdb.retention.time=30d']
+    ports: ['127.0.0.1:9090:9090']
+    volumes:
+      - ./.pilot/monitoring:/etc/prometheus:ro
+      - ./infrastructure/pilot/alerts.yml:/etc/qalapulse-alerts.yml:ro
+      - prometheus-data:/prometheus
+    logging: *logging
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    restart: unless-stopped
+    command: ['--config.file=/etc/alertmanager/alertmanager.json', '--storage.path=/alertmanager']
+    ports: ['127.0.0.1:9093:9093']
+    volumes:
+      - ./.pilot/monitoring:/etc/alertmanager:ro
+      - alertmanager-data:/alertmanager
+    logging: *logging
+  blackbox:
+    image: prom/blackbox-exporter:v0.27.0
+    restart: unless-stopped
+    volumes: ['./infrastructure/pilot/blackbox.yml:/etc/blackbox_exporter/config.yml:ro']
+    logging: *logging
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:
+  caddy-data:
+  caddy-config:
+  prometheus-data:
+  alertmanager-data:

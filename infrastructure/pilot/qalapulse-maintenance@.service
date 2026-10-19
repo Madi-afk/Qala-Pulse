@@ -1,0 +1,11 @@
+[Unit]
+Description=QalaPulse pilot %i
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/qalapulse
+ExecStart=/usr/bin/python3 /opt/qalapulse/scripts/pilot_ops.py %i
+UMask=0077
+TimeoutStartSec=4h

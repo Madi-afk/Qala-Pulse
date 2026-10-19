@@ -1,0 +1,55 @@
+groups:
+  - name: qalapulse-pilot
+    rules:
+      - alert: TargetUnavailable
+        expr: up == 0
+        for: 3m
+        labels: {severity: critical}
+        annotations: {summary: 'Monitoring target unavailable; inspect service and logs.'}
+      - alert: PublicEndpointUnavailable
+        expr: probe_success{job="public-https"} == 0
+        for: 3m
+        labels: {severity: critical}
+        annotations: {summary: 'Public HTTPS readiness failed.'}
+      - alert: CertificateExpiring
+        expr: probe_ssl_earliest_cert_expiry - time() < 14 * 86400
+        for: 10m
+        labels: {severity: warning}
+        annotations: {summary: 'TLS certificate expires in less than 14 days.'}
+      - alert: ServerErrors
+        expr: sum(increase(qalapulse_http_requests_total{status=~"5.."}[10m])) >= 3
+        labels: {severity: critical}
+        annotations: {summary: 'At least 3 API server errors in 10 minutes. Correlate request IDs.'}
+      - alert: RecoveryEmailFailure
+        expr: increase(qalapulse_mail_failures_total[15m]) > 0
+        labels: {severity: critical}
+        annotations: {summary: 'Password recovery SMTP delivery failed.'}
+      - alert: BackupOverdue
+        expr: time() - qalapulse_backup_success_timestamp > 26 * 3600
+        for: 5m
+        labels: {severity: critical}
+        annotations: {summary: 'No successful encrypted backup in 26 hours.'}
+      - alert: RestoreDrillOverdue
+        expr: time() - qalapulse_restore_success_timestamp > 8 * 86400
+        for: 5m
+        labels: {severity: critical}
+        annotations: {summary: 'No verified restore in 8 days.'}
+      - alert: RetentionOverdue
+        expr: time() - qalapulse_retention_success_timestamp > 3 * 3600
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: 'Photo retention has not completed in 3 hours.'}
+      - alert: WorkerUnavailable
+        expr: qalapulse_worker_available == 0
+        for: 5m
+        labels: {severity: critical}
+        annotations: {summary: 'Celery worker is not responding.'}
+      - alert: DiskSpaceLow
+        expr: qalapulse_disk_free_ratio < 0.15
+        for: 5m
+        labels: {severity: critical}
+        annotations: {summary: 'Less than 15 percent free space on pilot state filesystem.'}
+      - alert: AlertDeliveryFailure
+        expr: increase(alertmanager_notifications_failed_total[15m]) > 0
+        labels: {severity: critical}
+        annotations: {summary: 'Alertmanager cannot deliver notifications. Check independently.'}

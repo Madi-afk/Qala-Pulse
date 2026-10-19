@@ -33,7 +33,7 @@ celery_app.conf.update(
 def transcribe_upload(upload_id: str) -> None:
     with SessionLocal.begin() as db:
         upload = db.scalar(select(Upload).where(Upload.id == UUID(upload_id)).with_for_update())
-        if upload is None or upload.status in ("ready", "ready_mock"):
+        if upload is None or upload.status in ("ready", "ready_mock", "expired"):
             return
         audio = ObjectStorage().get(upload.original_key)
         cloud = settings.ai_mode == "cloud" and upload.cloud_consent

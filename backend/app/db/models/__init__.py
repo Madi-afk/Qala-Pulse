@@ -35,6 +35,7 @@ class User(Entity, Base):
     role: Mapped[str] = mapped_column(String(20), default="citizen")
     organization_id: Mapped[UUID | None] = mapped_column(ForeignKey("organizations.id"))
     is_active: Mapped[bool] = mapped_column(default=True)
+    auth_version: Mapped[int] = mapped_column(default=0, server_default="0")
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow
     )
@@ -199,6 +200,14 @@ class RefreshSession(Entity, Base):
     token_hash: Mapped[str] = mapped_column(String(64), unique=True)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     revoked: Mapped[bool] = mapped_column(default=False)
+
+
+class PasswordReset(Entity, Base):
+    __tablename__ = "password_resets"
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    used: Mapped[bool] = mapped_column(default=False)
 
 
 class IdempotencyRecord(Entity, Base):

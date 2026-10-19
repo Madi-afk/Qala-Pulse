@@ -114,6 +114,7 @@ def detail(incident_id: UUID, db: Db, user: Actor) -> dict[str, Any]:
             "url": f"/api/v1/operations/incidents/{item.id}/media/{m.id}",
         }
         for m in db.scalars(select(IncidentMedia).where(IncidentMedia.incident_id == item.id))
+        if m.redacted_url
     ]
     return result
 

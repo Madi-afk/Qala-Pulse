@@ -44,6 +44,20 @@ class Settings(BaseSettings):
     task_always_eager: bool = False
     rate_limit_enabled: bool = True
     rate_limit_per_minute: int = 120
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from: str = ""
+    smtp_tls: Literal["starttls", "ssl"] = "starttls"
+    password_reset_minutes: int = Field(default=20, ge=5, le=60)
+    metrics_token: str = ""
+    pilot_registration_closed: bool = False
+    pilot_registration_emails: list[str] = []
+    original_retention_days: int = Field(default=7, ge=1, le=30)
+    audio_retention_days: int = Field(default=2, ge=1, le=7)
+    unattached_retention_days: int = Field(default=7, ge=1, le=30)
+    public_photo_retention_days: int = Field(default=90, ge=7, le=365)
 
     @model_validator(mode="after")
     def production_secrets(self) -> "Settings":
@@ -54,6 +68,10 @@ class Settings(BaseSettings):
                 raise ValueError("Production requires unique JWT and storage secrets")
             if self.storage_mode != "minio" or not self.rate_limit_enabled:
                 raise ValueError("Production requires MinIO and rate limiting")
+            if not self.public_api_url.startswith("https://"):
+                raise ValueError("Production requires an HTTPS public URL")
+            if not self.smtp_host or not self.smtp_from or len(self.metrics_token) < 32:
+                raise ValueError("Production requires SMTP and a separate metrics token")
         return self
 
 

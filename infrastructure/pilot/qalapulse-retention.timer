@@ -1,0 +1,10 @@
+[Unit]
+Description=Hourly QalaPulse photo retention
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+Unit=qalapulse-maintenance@retention.service
+
+[Install]
+WantedBy=timers.target
