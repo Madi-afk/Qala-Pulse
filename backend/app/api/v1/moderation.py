@@ -1,3 +1,4 @@
+from datetime import UTC
 from typing import Any
 from uuid import UUID
 
@@ -7,6 +8,7 @@ from sqlalchemy import select
 from app.api.deps import Actor, Db, require_role
 from app.api.v1.incidents import validate_category
 from app.core.errors import fail
+from app.db.base import utcnow
 from app.db.models import (
     AuditLog,
     Category,
@@ -21,6 +23,7 @@ from app.db.models import (
     User,
 )
 from app.repositories.incidents import get_visible, recalculate, serialize
+from app.repositories.operations import TRANSITIONS, staff_incident
 from app.schemas.common import (
     AssignmentCreate,
     CategoryCode,
@@ -32,15 +35,6 @@ from app.schemas.common import (
 from app.services.geospatial.priority import distance_meters
 
 router = APIRouter(tags=["moderation"])
-TRANSITIONS = {
-    "published": {"under_review", "accepted", "rejected"},
-    "under_review": {"published", "accepted", "rejected"},
-    "accepted": {"in_progress", "under_review"},
-    "in_progress": {"resolved_pending_confirmation", "under_review"},
-    "resolved_pending_confirmation": {"under_review", "in_progress"},
-    "resolved": {"under_review"},
-    "rejected": {"under_review"},
-}
 
 
 @router.get("/moderation/incidents")
@@ -64,6 +58,17 @@ def moderate(incident_id: UUID, data: StatusChange, db: Db, user: Actor) -> dict
     item = get_visible(db, incident_id, user, lock=True)
     if not item.is_published:
         raise fail("draft_private", "Черновик не опубликован", 409)
+    if data.expected_updated_at is not None:
+        expected = data.expected_updated_at
+        expected = (
+            expected.replace(tzinfo=UTC) if expected.tzinfo is None else expected.astimezone(UTC)
+        )
+        actual = item.updated_at
+        actual = actual.replace(tzinfo=UTC) if actual.tzinfo is None else actual.astimezone(UTC)
+        if actual != expected:
+            raise fail(
+                "incident_changed", "Обращение изменилось. Обновите карточку перед сохранением", 409
+            )
     if user.role == "organization":
         assignment = db.scalar(
             select(IncidentAssignment).where(IncidentAssignment.incident_id == item.id)
@@ -76,10 +81,15 @@ def moderate(incident_id: UUID, data: StatusChange, db: Db, user: Actor) -> dict
             or data.status not in ("accepted", "in_progress", "resolved_pending_confirmation")
         ):
             raise fail("forbidden", "Недостаточно прав", 403)
-    if user.role == "moderator" and data.status in (
-        "accepted",
-        "in_progress",
-        "resolved_pending_confirmation",
+    if (
+        user.role == "moderator"
+        and data.status != item.status
+        and data.status
+        in (
+            "accepted",
+            "in_progress",
+            "resolved_pending_confirmation",
+        )
     ):
         raise fail("organization_required", "Нужно действие назначенной организации", 403)
     if data.status != item.status and data.status not in TRANSITIONS[item.status]:
@@ -116,7 +126,7 @@ def moderate(incident_id: UUID, data: StatusChange, db: Db, user: Actor) -> dict
             entity_id=item.id,
             action="moderate",
             old_data=old,
-            new_data=data.model_dump(exclude_none=True)
+            new_data=data.model_dump(mode="json", exclude_none=True)
             | {"resolution_cycle": item.resolution_cycle},
         )
     )
@@ -128,7 +138,7 @@ def moderate(incident_id: UUID, data: StatusChange, db: Db, user: Actor) -> dict
 @router.post("/moderation/incidents/{incident_id}/assignments", status_code=201)
 def assign(incident_id: UUID, data: AssignmentCreate, db: Db, user: Actor) -> dict[str, Any]:
     require_role(user, "moderator", "admin", "organization")
-    get_visible(db, incident_id, user, lock=True)
+    staff_incident(db, incident_id, user, lock=True)
     item = db.scalar(
         select(IncidentAssignment).where(IncidentAssignment.incident_id == incident_id)
     )
@@ -146,13 +156,14 @@ def assign(incident_id: UUID, data: AssignmentCreate, db: Db, user: Actor) -> di
     else:
         for key, value in data.model_dump().items():
             setattr(item, key, value)
+        item.assigned_by, item.assigned_at = user.id, utcnow()
     db.add(
         AuditLog(
             actor_id=user.id,
             entity_type="incident",
             entity_id=incident_id,
             action="assign",
-            new_data={"organization_id": str(data.organization_id)},
+            new_data=data.model_dump(mode="json"),
         )
     )
     db.flush()
@@ -160,12 +171,14 @@ def assign(incident_id: UUID, data: AssignmentCreate, db: Db, user: Actor) -> di
 
 
 @router.post("/moderation/incidents/{incident_id}/after-photo/{upload_id}", status_code=201)
-def after_photo(incident_id: UUID, upload_id: UUID, db: Db, user: Actor) -> dict[str, Any]:
+def after_photo(
+    incident_id: UUID, upload_id: UUID, db: Db, user: Actor, reviewed_by_user: bool = False
+) -> dict[str, Any]:
     from app.api.v1.uploads import owned_upload
     from app.core.config import get_settings
 
     require_role(user, "organization", "admin")
-    get_visible(db, incident_id, user)
+    staff_incident(db, incident_id, user, lock=True)
     assignment = db.scalar(
         select(IncidentAssignment).where(IncidentAssignment.incident_id == incident_id)
     )
@@ -174,8 +187,15 @@ def after_photo(incident_id: UUID, upload_id: UUID, db: Db, user: Actor) -> dict
     ):
         raise fail("forbidden", "Недостаточно прав", 403)
     upload = owned_upload(db, upload_id, user.id)
-    if not upload.redacted_key:
+    if not reviewed_by_user:
+        raise fail("review_required", "Проверьте публичную версию фотографии", 422)
+    if upload.media_type != "image" or not upload.redacted_key:
         raise fail("redaction_required", "Нужна обработанная фотография", 422)
+    previous = db.scalar(select(IncidentMedia).where(IncidentMedia.upload_id == upload.id))
+    if previous:
+        if previous.incident_id == incident_id and previous.media_type == "after_image":
+            return {"id": previous.id, "url": previous.redacted_url}
+        raise fail("upload_already_used", "Фотография уже связана с обращением", 409)
     root = f"{get_settings().public_api_url}/api/v1/media/{upload.id}"
     media = IncidentMedia(
         incident_id=incident_id,
@@ -260,9 +280,11 @@ def reports(
 @router.post("/moderation/reports/{report_id}/resolve")
 def resolve_report(report_id: UUID, db: Db, user: Actor, hide: bool = True) -> dict[str, str]:
     require_role(user, "moderator", "admin")
-    report = db.get(ContentReport, report_id)
+    report = db.scalar(select(ContentReport).where(ContentReport.id == report_id).with_for_update())
     if report is None:
         raise fail("not_found", "Жалоба не найдена", 404)
+    if report.status != "pending":
+        raise fail("report_already_resolved", "Жалоба уже рассмотрена, обновите очередь", 409)
     if hide:
         target = (
             db.get(Incident, report.incident_id)

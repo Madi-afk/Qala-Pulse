@@ -94,6 +94,8 @@ def test_postgres_migration_preserves_legacy_confirmations():
             )
             connection.commit()
             command.upgrade(config, "head")
+            media_table = Table("incident_media", MetaData(schema=schema), autoload_with=connection)
+            assert media_table.c.media_type.type.length == 20
             row = connection.execute(
                 text("SELECT id, comment, resolution_cycle FROM incident_confirmations")
             ).one()

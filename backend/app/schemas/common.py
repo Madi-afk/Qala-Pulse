@@ -140,6 +140,7 @@ class StatusChange(Input):
     note: str = Field(default="", max_length=1000)
     category_id: CategoryCode | None = None
     is_hidden: bool | None = None
+    expected_updated_at: datetime | None = None
 
 
 class AssignmentCreate(Input):

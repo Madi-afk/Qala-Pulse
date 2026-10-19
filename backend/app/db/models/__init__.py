@@ -106,7 +106,7 @@ class IncidentMedia(Entity, Base):
     __tablename__ = "incident_media"
     incident_id: Mapped[UUID] = mapped_column(ForeignKey("incidents.id"), index=True)
     upload_id: Mapped[UUID] = mapped_column(ForeignKey("uploads.id"), unique=True)
-    media_type: Mapped[str] = mapped_column(String(10))
+    media_type: Mapped[str] = mapped_column(String(20))
     original_url: Mapped[str] = mapped_column(String(300))
     redacted_url: Mapped[str] = mapped_column(String(300))
     thumbnail_url: Mapped[str] = mapped_column(String(300))

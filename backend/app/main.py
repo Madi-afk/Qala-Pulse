@@ -2,12 +2,14 @@ import hashlib
 import logging
 import time
 from collections.abc import Awaitable, Callable
+from pathlib import Path
 from uuid import uuid4
 
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, generate_latest
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
@@ -15,7 +17,7 @@ from sqlalchemy.exc import IntegrityError
 from starlette.exceptions import HTTPException
 
 from app.api.deps import Actor, require_role
-from app.api.v1 import auth, confirmations, health, incidents, moderation, uploads
+from app.api.v1 import auth, confirmations, health, incidents, moderation, operations, uploads
 from app.core.body_limit import RequestSizeLimit
 from app.core.config import get_settings
 from app.core.logging import configure_logging
@@ -136,6 +138,16 @@ async def observe(
     route = getattr(request.scope.get("route"), "path", "unmatched")
     response.headers["X-Request-ID"] = request.state.request_id
     response.headers["X-Content-Type-Options"] = "nosniff"
+    if request.url.path.startswith("/console"):
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; script-src 'self'; style-src 'self'; "
+            "img-src 'self' blob:; connect-src 'self'; font-src 'self'; "
+            "object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+        )
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["Cache-Control"] = "no-store"
+    if request.url.path.startswith("/api/v1/operations"):
+        response.headers["Cache-Control"] = "private, no-store"
     logger.info(
         "request",
         extra={
@@ -157,8 +169,13 @@ for router in [
     incidents.router,
     confirmations.router,
     moderation.router,
+    operations.router,
 ]:
     app.include_router(router, prefix="/api/v1")
+
+app.mount(
+    "/console", StaticFiles(directory=Path(__file__).parent / "console", html=True), name="console"
+)
 
 
 @app.get("/metrics", include_in_schema=False)

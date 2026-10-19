@@ -95,14 +95,33 @@ Content-Type: application/json
 - GET `/moderation/incidents`, `/moderation/reports` — очередь для moderator/admin.
 - PATCH `/moderation/incidents/{id}` — `status`, `note`, `category_id`, `is_hidden`.
 - POST `/moderation/incidents/{id}/assignments` — organization_id, executor_name, due_at. Организация может назначить исполнителя только уже закреплённого за ней обращения.
-- POST `/moderation/incidents/{id}/after-photo/{upload_id}` — обработанное фото результата от назначенной организации/admin.
+- POST `/moderation/incidents/{id}/after-photo/{upload_id}?reviewed_by_user=true` — обработанное фото результата от назначенной организации/admin после проверки предпросмотра. Без подтверждения — 422 `review_required`. Повтор того же вложения в то же обращение возвращает его прежний ID.
 - POST `/moderation/incidents/{id}/merge` — target_incident_id, явное объединение модератором.
 - POST `/moderation/reports/{id}/resolve?hide=true|false` — обработка жалобы.
 - PATCH `/admin/categories/{code}` — имена, описание, опасность, icon, color, активность.
 - PATCH `/admin/users/{id}/role` — роль и organization_id.
 - GET `/admin/audit` — аудит. GET `/metrics` — Prometheus, только admin.
 
-Организации и модераторы в MVP используют API/Swagger. Отдельной операторской панели нет. Новые организации пока создаются оператором БД; API администрирования организаций — задача следующего выпуска.
+Организации и модераторы используют [веб-панель `/console/`](operations-console.md) или API/Swagger. Новые организации пока создаются оператором БД; API администрирования организаций — задача следующего выпуска.
+
+### Служебная веб-панель
+
+Все маршруты требуют Bearer access token и актуальную роль из БД. Организация видит только свои назначенные, опубликованные и нескрытые обращения; модератор/admin также могут просматривать скрытые. Черновики не выдаются. Ответы содержат `Cache-Control: private, no-store`.
+
+| Метод | Путь | Назначение |
+|---|---|---|
+| GET | `/operations/incidents` | Очередь: `q`, `status`, `category_id`, `visibility=visible|hidden|all`, `unassigned`, `sort=priority|newest|oldest`, `page`, `page_size≤50`. Ответ `items`, `total`, `page`, `has_more` |
+| GET | `/operations/organizations` | Справочник: `q`, `page`, до 50 записей и `has_more`; организации доступна только своя запись |
+| GET | `/operations/incidents/{id}` | Карточка с назначением, допустимыми переходами `allowed_statuses` и защищёнными ссылками на медиа |
+| GET | `/operations/incidents/{id}/media/{media_id}` | Только обработанное фото, авторизация и повторная проверка доступа |
+| GET | `/operations/incidents/{id}/activity` | `kind=timeline|comments`, `page`, по 20 записей; скрытые комментарии только модератору/admin |
+| GET | `/operations/incidents/{id}/duplicates` | Кандидаты без самого обращения, без автоматического объединения; moderator/admin |
+| POST | `/operations/incidents/{id}/responses` | JSON `{"text":"Ответ жителям"}`, до 2000 символов; назначенная организация/admin. Создаёт публичный комментарий, событие истории и аудит |
+| GET | `/operations/reports` | `status=pending|actioned|dismissed`, `page`, по 20 жалоб с текстом и связью с обращением; moderator/admin |
+
+Действия изменения категории, статуса, назначения, объединения и разбора жалобы используют существующие `/moderation/*` endpoints. Повтор решения уже закрытой жалобы возвращает 409 `report_already_resolved`. Поле исполнителя — имя/бригада, а не новая учётная запись.
+
+Панель передаёт `expected_updated_at` из загруженной карточки в PATCH статуса/категории/видимости. Если другой оператор уже изменил обращение, сервер возвращает 409 `incident_changed`; обновите карточку перед повторным сохранением. Параметр необязателен для совместимости существующих API-клиентов.
 
 ## Ошибки
 

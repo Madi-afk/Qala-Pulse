@@ -19,6 +19,8 @@ dependencies = [
 dev = ["pytest>=8.3,<10", "pytest-cov>=6,<8", "ruff>=0.11,<1", "mypy>=1.15,<2", "types-redis", "types-Pillow"]
 [tool.setuptools.packages.find]
 include = ["app*"]
+[tool.setuptools.package-data]
+app = ["console/*.html", "console/*.css", "console/*.js", "console/*.svg"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = ["integration: requires PostgreSQL/PostGIS, Redis and MinIO"]

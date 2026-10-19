@@ -73,3 +73,30 @@ jobs:
       - run: flutter test
       - run: dart format --output=none --set-exit-if-changed lib test
       - run: flutter build web --dart-define=API_BASE_URL=http://localhost:8000/api/v1
+  console:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: console-tests/package-lock.json
+      - run: pip install -r backend/requirements.lock -e './backend[dev]'
+      - run: npm ci
+        working-directory: console-tests
+      - run: npm run format:check
+        working-directory: console-tests
+      - run: npx playwright install --with-deps chromium
+        working-directory: console-tests
+      - run: npm test
+        working-directory: console-tests
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: console-browser-failures
+          path: console-tests/test-results/

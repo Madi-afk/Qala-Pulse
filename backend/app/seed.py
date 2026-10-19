@@ -12,6 +12,7 @@ from app.db.base import utcnow
 from app.db.models import (
     Category,
     Comment,
+    ContentReport,
     Incident,
     IncidentAssignment,
     IncidentConfirmation,
@@ -211,6 +212,17 @@ def seed() -> None:
                         distance_meters=3.3,
                         text_similarity=0.85,
                         status="suggested",
+                    )
+                )
+        for index in range(3):
+            report_id = seed_id(f"report-{index}")
+            if db.get(ContentReport, report_id) is None:
+                db.add(
+                    ContentReport(
+                        id=report_id,
+                        reporter_id=users[0].id,
+                        incident_id=ids[index],
+                        reason="Демонстрационная жалоба: проверьте соответствие описания фотографии.",
                     )
                 )
     print(

@@ -23,6 +23,9 @@ mobile/android/key.properties
 *.pfx
 artifacts/
 .playwright-mcp/
+node_modules/
+console-tests/test-results/
+console-tests/playwright-report/
 
 # Local tooling, unrelated workspace project and temporary render files
 /.agents/
